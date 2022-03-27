@@ -1,6 +1,6 @@
 package com.github.houbb.mq.consumer.api;
 
-import com.github.houbb.mq.common.dto.MqMessage;
+import com.github.houbb.mq.common.dto.req.MqMessage;
 import com.github.houbb.mq.consumer.constant.ConsumerStatus;
 
 /**

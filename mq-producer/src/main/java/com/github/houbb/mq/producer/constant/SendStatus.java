@@ -5,8 +5,8 @@ package com.github.houbb.mq.producer.constant;
  * @since 1.0.0
  */
 public enum SendStatus {
-    S("S", "成功"),
-    F("F", "失败"),
+    SUCCESS("SUCCESS", "发送成功"),
+    FAILED("FAILED", "发送失败"),
     ;
 
     private final String code;

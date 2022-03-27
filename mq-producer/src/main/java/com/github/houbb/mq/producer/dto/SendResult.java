@@ -18,6 +18,14 @@ public class SendResult {
      */
     private SendStatus status;
 
+    public static SendResult of(String messageId, SendStatus status) {
+        SendResult result = new SendResult();
+        result.setMessageId(messageId);
+        result.setStatus(status);
+
+        return result;
+    }
+
     public String getMessageId() {
         return messageId;
     }

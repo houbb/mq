@@ -1,4 +1,4 @@
-package com.github.houbb.mq.common.dto;
+package com.github.houbb.mq.common.dto.req;
 
 import java.util.Arrays;
 import java.util.List;
@@ -7,7 +7,7 @@ import java.util.List;
  * @author binbin.hou
  * @since 1.0.0
  */
-public class MqMessage {
+public class MqMessage extends MqCommonReq {
 
     /**
      * 标题名称
