@@ -1,6 +1,5 @@
 package com.github.houbb.mq.common.dto.req;
 
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -8,6 +7,11 @@ import java.util.List;
  * @since 1.0.0
  */
 public class MqMessage extends MqCommonReq {
+
+    /**
+     * 分组名称
+     */
+    private String groupName;
 
     /**
      * 标题名称
@@ -22,7 +26,7 @@ public class MqMessage extends MqCommonReq {
     /**
      * 内容
      */
-    private byte[] payload;
+    private String payload;
 
     /**
      * 业务标识
@@ -33,6 +37,14 @@ public class MqMessage extends MqCommonReq {
      * 负载分片标识
      */
     private String shardingKey;
+
+    public String getGroupName() {
+        return groupName;
+    }
+
+    public void setGroupName(String groupName) {
+        this.groupName = groupName;
+    }
 
     public String getTopic() {
         return topic;
@@ -50,11 +62,11 @@ public class MqMessage extends MqCommonReq {
         this.tags = tags;
     }
 
-    public byte[] getPayload() {
+    public String getPayload() {
         return payload;
     }
 
-    public void setPayload(byte[] payload) {
+    public void setPayload(String payload) {
         this.payload = payload;
     }
 
@@ -73,16 +85,4 @@ public class MqMessage extends MqCommonReq {
     public void setShardingKey(String shardingKey) {
         this.shardingKey = shardingKey;
     }
-
-    @Override
-    public String toString() {
-        return "MqMessage{" +
-                "topic='" + topic + '\'' +
-                ", tags=" + tags +
-                ", payload=" + Arrays.toString(payload) +
-                ", bizKey='" + bizKey + '\'' +
-                ", shardingKey='" + shardingKey + '\'' +
-                '}';
-    }
-
 }

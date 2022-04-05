@@ -8,7 +8,10 @@ import com.github.houbb.heaven.response.respcode.RespCode;
  */
 public enum ConsumerRespCode implements RespCode {
 
-    RPC_INIT_FAILED("C00001", "消费者启动失败");
+    RPC_INIT_FAILED("C00001", "消费者启动失败"),
+    SUBSCRIBE_FAILED("C00002", "消费者注册失败"),
+    UN_SUBSCRIBE_FAILED("C00003", "消费者注销失败"),
+    ;
 
     private final String code;
     private final String msg;

@@ -25,6 +25,10 @@
             <groupId>com.github.houbb</groupId>
             <artifactId>load-balance</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.github.houbb</groupId>
+            <artifactId>id-core</artifactId>
+        </dependency>
 
         <!--============================== OTHER ==============================-->
         <dependency>

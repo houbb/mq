@@ -1,4 +1,4 @@
-package com.github.houbb.mq.consumer.constant;
+package com.github.houbb.mq.common.resp;
 
 /**
  * 消费状态

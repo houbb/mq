@@ -13,6 +13,7 @@
         <module>mq-producer</module>
         <module>mq-consumer</module>
         <module>mq-test</module>
+        <module>mq-broker</module>
     </modules>
 
     <properties>
@@ -58,6 +59,11 @@
             <dependency>
                 <groupId>${project.groupId}</groupId>
                 <artifactId>mq-common</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>mq-broker</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

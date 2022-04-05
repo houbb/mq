@@ -1,4 +1,4 @@
-package com.github.houbb.mq.common.exception;
+package com.github.houbb.mq.common.resp;
 
 import com.github.houbb.heaven.response.respcode.RespCode;
 

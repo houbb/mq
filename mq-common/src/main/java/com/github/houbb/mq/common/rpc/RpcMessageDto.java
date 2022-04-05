@@ -1,6 +1,6 @@
 package com.github.houbb.mq.common.rpc;
 
-import com.github.houbb.mq.common.exception.MqCommonRespCode;
+import com.github.houbb.mq.common.resp.MqCommonRespCode;
 
 import java.io.Serializable;
 

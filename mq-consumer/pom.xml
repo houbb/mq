@@ -16,6 +16,11 @@
             <groupId>com.github.houbb</groupId>
             <artifactId>mq-common</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>mq-broker</artifactId>
+        </dependency>
     </dependencies>
 
 </project>

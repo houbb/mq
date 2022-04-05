@@ -224,56 +224,25 @@ ps: 这部分测试代码可以关注公众号【老马啸西风】，后台回�
 
 # 后期 ROAD-MAP
 
-- [x] all 模块
+- [ ] all 模块
 
-- [x] check 客户端启动检测
+- [ ] check broker 启动检测
   
-- [x] register 是否注册到注册中心
-  
-- [x] delay 延迟暴露
+- [ ] 关闭时通知 register center
 
-- [x] 关闭时通知 register center
-
-- [x] 优雅关闭添加超时设置
+- [ ] 优雅关闭添加超时设置
   
-- [x] heartbeat 心跳检测机制
+- [ ] heartbeat 心跳检测机制
 
-- [x] 完善 load-balance 实现
+- [ ] 完善 load-balance 实现
   
-- [x] 完善 filter 实现
-  
-- [x] 完善 mqInterceptor 实现
-
 - [ ] 失败重试的拓展
   
 尝试其他服务端
 
 指定重试策略（sisyphus）
 
-- [ ] route 路由规则
+- [ ] broker springboot 实现
 
-可以和 echo 回声检测一起实现
-
-- [ ] echo 回声服务
-
-- [ ] spring 整合
-
-- [ ] springboot 整合
-
-- [ ] telnet 命令行治理
-  
-- [ ] mq-admin 控台管理
-
-服务治理
-
-- [ ] async 异步执行
-  
-- [ ] ~~cache 结果缓存？~~
-
-- [ ] ~~validator 参数校验~~
-
-- [ ] ~~服务降级~~
-
-- [ ] ~~version 多版本管理~~
-
+- [ ] dead message 死信队列
 

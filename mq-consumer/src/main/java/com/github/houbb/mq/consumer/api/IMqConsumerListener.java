@@ -1,7 +1,7 @@
 package com.github.houbb.mq.consumer.api;
 
 import com.github.houbb.mq.common.dto.req.MqMessage;
-import com.github.houbb.mq.consumer.constant.ConsumerStatus;
+import com.github.houbb.mq.common.resp.ConsumerStatus;
 
 /**
  * @author binbin.hou

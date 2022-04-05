@@ -5,19 +5,25 @@ import com.github.houbb.heaven.util.lang.StringUtil;
 import com.github.houbb.log.integration.core.Log;
 import com.github.houbb.log.integration.core.LogFactory;
 import com.github.houbb.mq.common.constant.MethodType;
+import com.github.houbb.mq.common.dto.req.MqMessage;
 import com.github.houbb.mq.common.dto.resp.MqCommonResp;
-import com.github.houbb.mq.common.exception.MqCommonRespCode;
+import com.github.houbb.mq.common.dto.resp.MqConsumerResultResp;
+import com.github.houbb.mq.common.resp.ConsumerStatus;
+import com.github.houbb.mq.common.resp.MqCommonRespCode;
 import com.github.houbb.mq.common.rpc.RpcMessageDto;
 import com.github.houbb.mq.common.support.invoke.IInvokeService;
 import com.github.houbb.mq.common.util.ChannelUtil;
 import com.github.houbb.mq.common.util.DelimiterUtil;
+import com.github.houbb.mq.consumer.api.IMqConsumerListenerContext;
+import com.github.houbb.mq.consumer.support.listener.IMqListenerService;
+import com.github.houbb.mq.consumer.support.listener.MqConsumerListenerContext;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 
 /**
  * @author binbin.hou
- * @since 1.0.0
+ * @since 0.0.3
  */
 public class MqConsumerHandler extends SimpleChannelInboundHandler {
 
@@ -25,12 +31,19 @@ public class MqConsumerHandler extends SimpleChannelInboundHandler {
 
     /**
      * 调用管理类
-     * @since 1.0.0
+     * @since 0.0.3
      */
     private final IInvokeService invokeService;
 
-    public MqConsumerHandler(IInvokeService invokeService) {
+    /**
+     * 消息监听服务类
+     * @since 0.0.3
+     */
+    private final IMqListenerService mqListenerService;
+
+    public MqConsumerHandler(IInvokeService invokeService, IMqListenerService mqListenerService) {
         this.invokeService = invokeService;
+        this.mqListenerService = mqListenerService;
     }
 
     @Override
@@ -86,18 +99,40 @@ public class MqConsumerHandler extends SimpleChannelInboundHandler {
                 methodType, json);
 
         // 消息发送
-        if(MethodType.P_SEND_MESSAGE.equals(methodType)) {
+        if(MethodType.B_MESSAGE_PUSH.equals(methodType)) {
             // 日志输出
             log.info("收到服务端消息: {}", json);
+            return this.consumer(json);
+        }
 
+        throw new UnsupportedOperationException("暂不支持的方法类型");
+    }
+
+    /**
+     * 消息消费
+     * @param json 原始请求
+     * @return 结果
+     * @since 0.0.3
+     */
+    private MqCommonResp consumer(final String json) {
+        try {
             // 如果是 broker，应该进行处理化等操作。
+            MqMessage mqMessage = JSON.parseObject(json, MqMessage.class);
+            IMqConsumerListenerContext context = new MqConsumerListenerContext();
+            ConsumerStatus consumerStatus = this.mqListenerService.consumer(mqMessage, context);
 
-            MqCommonResp resp = new MqCommonResp();
+            MqConsumerResultResp resp = new MqConsumerResultResp();
             resp.setRespCode(MqCommonRespCode.SUCCESS.getCode());
             resp.setRespMessage(MqCommonRespCode.SUCCESS.getMsg());
+            resp.setConsumerStatus(consumerStatus.getCode());
+            return resp;
+        } catch (Exception exception) {
+            log.error("消息消费异常", exception);
+            MqConsumerResultResp resp = new MqConsumerResultResp();
+            resp.setRespCode(MqCommonRespCode.FAIL.getCode());
+            resp.setRespMessage(MqCommonRespCode.FAIL.getMsg());
             return resp;
         }
-        throw new UnsupportedOperationException("暂不支持的方法类型");
     }
 
     /**
