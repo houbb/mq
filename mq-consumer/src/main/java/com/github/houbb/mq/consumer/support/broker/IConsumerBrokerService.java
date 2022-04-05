@@ -60,4 +60,10 @@ public interface IConsumerBrokerService extends Destroyable {
      */
     void unSubscribe(String topicName, String tagRegex);
 
+    /**
+     * 心跳
+     * @since 0.0.6
+     */
+    void heartbeat();
+
 }

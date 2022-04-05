@@ -61,6 +61,12 @@ public class MethodType {
     public static final String C_MESSAGE_PULL = "C_MESSAGE_PULL";
 
     /**
+     * 消费者心跳
+     * @since 0.0.6
+     */
+    public static final String C_HEARTBEAT = "C_HEARTBEAT";
+
+    /**
      * 中间人消息推送
      * @since 0.0.3
      */

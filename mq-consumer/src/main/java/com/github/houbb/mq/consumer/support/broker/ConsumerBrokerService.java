@@ -1,6 +1,7 @@
 package com.github.houbb.mq.consumer.support.broker;
 
 import com.alibaba.fastjson.JSON;
+import com.github.houbb.heaven.util.net.NetUtil;
 import com.github.houbb.heaven.util.util.DateUtil;
 import com.github.houbb.id.core.util.IdHelper;
 import com.github.houbb.log.integration.core.Log;
@@ -12,6 +13,7 @@ import com.github.houbb.mq.broker.dto.consumer.ConsumerUnSubscribeReq;
 import com.github.houbb.mq.broker.utils.InnerChannelUtils;
 import com.github.houbb.mq.common.constant.MethodType;
 import com.github.houbb.mq.common.dto.req.MqCommonReq;
+import com.github.houbb.mq.common.dto.req.MqHeartBeatReq;
 import com.github.houbb.mq.common.dto.resp.MqCommonResp;
 import com.github.houbb.mq.common.resp.MqCommonRespCode;
 import com.github.houbb.mq.common.resp.MqException;
@@ -32,7 +34,11 @@ import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelInitializer;
 import io.netty.handler.codec.DelimiterBasedFrameDecoder;
 
+import java.lang.reflect.Method;
 import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author binbin.hou
@@ -88,6 +94,13 @@ public class ConsumerBrokerService implements IConsumerBrokerService {
      */
     private IMqListenerService mqListenerService;
 
+    /**
+     * 心跳定时任务
+     *
+     * @since 0.0.6
+     */
+    private final ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
+
     @Override
     public void initChannelFutureList(ConsumerBrokerConfig config) {
         //1. 配置初始化
@@ -102,6 +115,23 @@ public class ConsumerBrokerService implements IConsumerBrokerService {
         //2. 初始化
         this.channelFutureList = ChannelFutureUtils.initChannelFutureList(brokerAddress,
                 initChannelHandler(), check);
+
+        //3. 初始化心跳
+        this.initHeartbeat();
+    }
+
+    /**
+     * 初始化心跳
+     * @since 0.0.6
+     */
+    private void initHeartbeat() {
+        //5S 发一次心跳
+        scheduledExecutorService.scheduleAtFixedRate(new Runnable() {
+            @Override
+            public void run() {
+                heartbeat();
+            }
+        }, 5, 5, TimeUnit.SECONDS);
     }
 
     private ChannelHandler initChannelHandler() {
@@ -232,6 +262,29 @@ public class ConsumerBrokerService implements IConsumerBrokerService {
         MqCommonResp resp = callServer(channel, req, MqCommonResp.class);
         if(!MqCommonRespCode.SUCCESS.getCode().equals(resp.getRespCode())) {
             throw new MqException(ConsumerRespCode.UN_SUBSCRIBE_FAILED);
+        }
+    }
+
+    @Override
+    public void heartbeat() {
+        final MqHeartBeatReq req = new MqHeartBeatReq();
+        final String traceId = IdHelper.uuid32();
+        req.setTraceId(traceId);
+        req.setMethodType(MethodType.C_HEARTBEAT);
+        req.setAddress(NetUtil.getLocalHost());
+        req.setPort(0);
+        req.setTime(System.currentTimeMillis());
+
+        log.debug("[HEARTBEAT] 往服务端发送心跳包 {}", JSON.toJSON(req));
+
+        // 通知全部
+        for(RpcChannelFuture channelFuture : channelFutureList) {
+            try {
+                Channel channel = channelFuture.getChannelFuture().channel();
+                callServer(channel, req, null);
+            } catch (Exception exception) {
+                log.error("[HEARTBEAT] 往服务端处理异常", exception);
+            }
         }
     }
 

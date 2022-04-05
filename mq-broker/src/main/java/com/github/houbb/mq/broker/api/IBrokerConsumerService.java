@@ -9,6 +9,7 @@ package com.github.houbb.mq.broker.api;
 import com.github.houbb.mq.broker.dto.ServiceEntry;
 import com.github.houbb.mq.broker.dto.consumer.ConsumerSubscribeReq;
 import com.github.houbb.mq.broker.dto.consumer.ConsumerUnSubscribeReq;
+import com.github.houbb.mq.common.dto.req.MqHeartBeatReq;
 import com.github.houbb.mq.common.dto.req.MqMessage;
 import com.github.houbb.mq.common.dto.resp.MqCommonResp;
 import io.netty.channel.Channel;
@@ -77,5 +78,13 @@ public interface IBrokerConsumerService {
      * @return 结果
      */
     List<Channel> getSubscribeList(MqMessage mqMessage);
+
+    /**
+     * 心跳
+     * @param mqHeartBeatReq 入参
+     * @param channel 渠道
+     * @since 0.0.6
+     */
+    void heartbeat(final MqHeartBeatReq mqHeartBeatReq, Channel channel);
 
 }

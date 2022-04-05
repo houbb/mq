@@ -19,6 +19,7 @@ import com.github.houbb.mq.broker.support.push.BrokerPushContext;
 import com.github.houbb.mq.broker.support.push.IBrokerPushService;
 import com.github.houbb.mq.common.constant.MethodType;
 import com.github.houbb.mq.common.dto.req.MqConsumerPullReq;
+import com.github.houbb.mq.common.dto.req.MqHeartBeatReq;
 import com.github.houbb.mq.common.dto.req.MqMessage;
 import com.github.houbb.mq.common.dto.resp.MqCommonResp;
 import com.github.houbb.mq.common.resp.MqCommonRespCode;
@@ -100,7 +101,6 @@ public class MqBrokerHandler extends SimpleChannelInboundHandler {
     public void setBrokerPushService(IBrokerPushService brokerPushService) {
         this.brokerPushService = brokerPushService;
     }
-
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, Object msg) throws Exception {
@@ -212,6 +212,12 @@ public class MqBrokerHandler extends SimpleChannelInboundHandler {
             if(MethodType.C_MESSAGE_PULL.equals(methodType)) {
                 MqConsumerPullReq req = JSON.parseObject(json, MqConsumerPullReq.class);
                 return mqBrokerPersist.pull(req, channel);
+            }
+            // 消费者心跳
+            if(MethodType.C_HEARTBEAT.equals(methodType)) {
+                MqHeartBeatReq req = JSON.parseObject(json, MqHeartBeatReq.class);
+                registerConsumerService.heartbeat(req, channel);
+                return null;
             }
 
             throw new UnsupportedOperationException("暂不支持的方法类型");
