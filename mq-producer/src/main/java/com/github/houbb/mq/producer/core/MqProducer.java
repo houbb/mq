@@ -83,6 +83,12 @@ public class MqProducer extends Thread implements IMqProducer {
      */
     private List<RpcChannelFuture> channelFutureList;
 
+    /**
+     * 检测 broker 可用性
+     * @since 0.0.4
+     */
+    private volatile boolean check = true;
+
     public MqProducer(String groupName, int port) {
         this.groupName = groupName;
         this.port = port;
@@ -111,6 +117,10 @@ public class MqProducer extends Thread implements IMqProducer {
      */
     public boolean enableStatus() {
         return enableFlag;
+    }
+
+    public void setCheck(boolean check) {
+        this.check = check;
     }
 
     private ChannelHandler initChannelHandler() {
@@ -148,11 +158,9 @@ public class MqProducer extends Thread implements IMqProducer {
                 groupName, port, brokerAddress);
 
         try {
-            // channel handler
-            ChannelHandler channelHandler = this.initChannelHandler();
-
             //channel future
-            this.channelFutureList = ChannelFutureUtils.initChannelFutureList(brokerAddress, channelHandler);
+            this.channelFutureList = ChannelFutureUtils.initChannelFutureList(brokerAddress,
+                    initChannelHandler(), check);
 
             // register to broker
             this.registerToBroker();

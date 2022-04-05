@@ -12,7 +12,8 @@ public enum MqCommonRespCode implements RespCode {
     FAIL("9999", "失败"),
     TIMEOUT("8888", "超时"),
 
-    RPC_GET_RESP_FAILED("10001", "RPC 获取响应失败")
+    RPC_GET_RESP_FAILED("10001", "RPC 获取响应失败"),
+    REGISTER_TO_BROKER_FAILED("10002", "注册到 Broker 失败"),
     ;
 
     private final String code;

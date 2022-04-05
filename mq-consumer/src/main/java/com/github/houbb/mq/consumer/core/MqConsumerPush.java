@@ -85,6 +85,12 @@ public class MqConsumerPush extends Thread implements IMqConsumer  {
     private volatile boolean enableFlag = false;
 
     /**
+     * 检测 broker 可用性
+     * @since 0.0.4
+     */
+    private volatile boolean check = true;
+
+    /**
      * 消息监听服务类
      * @since 0.0.3
      */
@@ -109,6 +115,10 @@ public class MqConsumerPush extends Thread implements IMqConsumer  {
      */
     public boolean enableStatus() {
         return enableFlag;
+    }
+
+    public void setCheck(boolean check) {
+        this.check = check;
     }
 
     private ChannelHandler initChannelHandler() {
@@ -169,11 +179,10 @@ public class MqConsumerPush extends Thread implements IMqConsumer  {
         this.paramCheck();
 
         try {
-            // channel handler
-            ChannelHandler channelHandler = this.initChannelHandler();
-
             //channel future
-            this.channelFutureList = ChannelFutureUtils.initChannelFutureList(brokerAddress, channelHandler);
+            this.channelFutureList = ChannelFutureUtils.initChannelFutureList(brokerAddress,
+                    initChannelHandler(),
+                    check);
 
             // register to broker
             this.registerToBroker();
