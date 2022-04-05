@@ -12,6 +12,7 @@ import com.github.houbb.mq.common.support.invoke.impl.InvokeService;
 import com.github.houbb.mq.common.support.status.IStatusManager;
 import com.github.houbb.mq.common.support.status.StatusManager;
 import com.github.houbb.mq.producer.api.IMqProducer;
+import com.github.houbb.mq.producer.constant.ProducerConst;
 import com.github.houbb.mq.producer.constant.ProducerRespCode;
 import com.github.houbb.mq.producer.dto.SendResult;
 import com.github.houbb.mq.producer.support.broker.IProducerBrokerService;
@@ -30,7 +31,7 @@ public class MqProducer extends Thread implements IMqProducer {
     /**
      * 分组名称
      */
-    private String groupName = "DEFAULT";
+    private String groupName = ProducerConst.DEFAULT_GROUP_NAME;
 
     /**
      * 中间人地址

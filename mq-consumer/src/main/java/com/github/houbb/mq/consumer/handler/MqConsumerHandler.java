@@ -33,16 +33,19 @@ public class MqConsumerHandler extends SimpleChannelInboundHandler {
      * 调用管理类
      * @since 0.0.3
      */
-    private final IInvokeService invokeService;
+    private IInvokeService invokeService;
 
     /**
      * 消息监听服务类
      * @since 0.0.3
      */
-    private final IMqListenerService mqListenerService;
+    private IMqListenerService mqListenerService;
 
-    public MqConsumerHandler(IInvokeService invokeService, IMqListenerService mqListenerService) {
+    public void setInvokeService(IInvokeService invokeService) {
         this.invokeService = invokeService;
+    }
+
+    public void setMqListenerService(IMqListenerService mqListenerService) {
         this.mqListenerService = mqListenerService;
     }
 

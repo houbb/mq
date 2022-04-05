@@ -122,7 +122,7 @@ public class LocalBrokerConsumerService implements IBrokerConsumerService {
             String tagRegex = bo.getTagRegex();
 
             if(hasMatch(tagNameList, tagRegex)) {
-                //TODO: 这种设置模式，统一添加处理
+                //TODO: 这种设置模式，统一添加处理 haven
                 String groupName = bo.getGroupName();
                 List<ConsumerSubscribeBo> list = groupMap.get(groupName);
                 if(list == null) {
