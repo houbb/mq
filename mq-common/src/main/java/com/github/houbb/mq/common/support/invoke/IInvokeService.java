@@ -37,4 +37,11 @@ public interface IInvokeService {
      */
     RpcMessageDto getResponse(final String seqId);
 
+    /**
+     * 是否依然包含请求待处理
+     * @return 是否
+     * @since 0.0.5
+     */
+    boolean remainsRequest();
+
 }
