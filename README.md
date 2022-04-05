@@ -154,9 +154,9 @@ System.out.println(JSON.toJSON(sendResult));
 
 - [x] check broker 启动检测
   
-- [ ] 关闭时通知 register center
+- [x] 关闭时通知 register center
 
-- [ ] 优雅关闭添加超时设置
+- [x] 优雅关闭添加超时设置
   
 - [ ] heartbeat 心跳检测机制
 
