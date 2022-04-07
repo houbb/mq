@@ -1,6 +1,8 @@
 package com.github.houbb.mq.broker.core;
 
 import com.github.houbb.heaven.util.common.ArgUtil;
+import com.github.houbb.load.balance.api.ILoadBalance;
+import com.github.houbb.load.balance.api.impl.LoadBalances;
 import com.github.houbb.log.integration.core.Log;
 import com.github.houbb.log.integration.core.LogFactory;
 import com.github.houbb.mq.broker.api.IMqBroker;
@@ -8,6 +10,7 @@ import com.github.houbb.mq.broker.api.IBrokerConsumerService;
 import com.github.houbb.mq.broker.api.IBrokerProducerService;
 import com.github.houbb.mq.broker.constant.BrokerConst;
 import com.github.houbb.mq.broker.constant.BrokerRespCode;
+import com.github.houbb.mq.broker.dto.consumer.ConsumerSubscribeBo;
 import com.github.houbb.mq.broker.handler.MqBrokerHandler;
 import com.github.houbb.mq.broker.support.api.LocalBrokerConsumerService;
 import com.github.houbb.mq.broker.support.api.LocalBrokerProducerService;
@@ -16,6 +19,7 @@ import com.github.houbb.mq.broker.support.persist.LocalMqBrokerPersist;
 import com.github.houbb.mq.broker.support.push.BrokerPushService;
 import com.github.houbb.mq.broker.support.push.IBrokerPushService;
 import com.github.houbb.mq.common.resp.MqException;
+import com.github.houbb.mq.common.rpc.RpcChannelFuture;
 import com.github.houbb.mq.common.support.invoke.IInvokeService;
 import com.github.houbb.mq.common.support.invoke.impl.InvokeService;
 import com.github.houbb.mq.common.util.DelimiterUtil;
@@ -38,13 +42,6 @@ public class MqBroker extends Thread implements IMqBroker {
      * 端口号
      */
     private final int port;
-
-    /**
-     * 处理类
-     *
-     * @since 0.0.3
-     */
-    private ChannelHandler channelHandler;
 
     /**
      * 调用管理类
@@ -87,12 +84,24 @@ public class MqBroker extends Thread implements IMqBroker {
      */
     private long respTimeoutMills = 5000;
 
+    /**
+     * 负载均衡
+     * @since 0.0.7
+     */
+    private ILoadBalance<ConsumerSubscribeBo> loadBalance = LoadBalances.weightRoundRobbin();
+
     public MqBroker() {
         this(BrokerConst.DEFAULT_PORT);
     }
 
     public MqBroker(int port) {
         this.port = port;
+    }
+
+    public void setLoadBalance(ILoadBalance<ConsumerSubscribeBo> loadBalance) {
+        ArgUtil.notNull(loadBalance, "loadBalance");
+
+        this.loadBalance = loadBalance;
     }
 
     public void setRegisterConsumerService(IBrokerConsumerService registerConsumerService) {
@@ -124,6 +133,7 @@ public class MqBroker extends Thread implements IMqBroker {
     private ChannelHandler initChannelHandler() {
         MqBrokerHandler handler = new MqBrokerHandler();
         handler.setInvokeService(invokeService);
+        registerConsumerService.loadBalance(this.loadBalance);
         handler.setRegisterConsumerService(registerConsumerService);
         handler.setRegisterProducerService(registerProducerService);
         handler.setMqBrokerPersist(mqBrokerPersist);

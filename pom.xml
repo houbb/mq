@@ -36,7 +36,7 @@
         <heaven.version>0.1.160</heaven.version>
         <log-integration.version>1.1.8</log-integration.version>
         <json.version>0.1.1</json.version>
-        <load-balance.version>0.0.4</load-balance.version>
+        <load-balance.version>0.0.5</load-balance.version>
 
         <!--============================== OTHER ==============================-->
         <junit.version>4.12</junit.version>

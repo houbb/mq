@@ -1,6 +1,7 @@
 package com.github.houbb.mq.broker.dto.consumer;
 
-import com.github.houbb.mq.common.dto.req.MqCommonReq;
+import com.github.houbb.load.balance.support.server.IServer;
+import com.github.houbb.mq.common.rpc.RpcAddress;
 
 import java.util.Objects;
 
@@ -9,7 +10,7 @@ import java.util.Objects;
  * @author binbin.hou
  * @since 0.0.3
  */
-public class ConsumerSubscribeBo {
+public class ConsumerSubscribeBo extends RpcAddress implements IServer {
 
     /**
      * 分组名称
@@ -82,5 +83,6 @@ public class ConsumerSubscribeBo {
     public int hashCode() {
         return Objects.hash(groupName, topicName, tagRegex, channelId);
     }
+
 }
 

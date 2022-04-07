@@ -35,6 +35,8 @@ public final class InnerAddressUtils {
             rpcAddress.setPort(Integer.parseInt(infos[1]));
             if(infos.length > 2) {
                 rpcAddress.setWeight(Integer.parseInt(infos[2]));
+            } else {
+                rpcAddress.setWeight(1);
             }
             list.add(rpcAddress);
         }

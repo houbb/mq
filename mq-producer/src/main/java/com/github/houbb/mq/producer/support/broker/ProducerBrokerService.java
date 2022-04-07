@@ -3,6 +3,7 @@ package com.github.houbb.mq.producer.support.broker;
 import com.alibaba.fastjson.JSON;
 import com.github.houbb.heaven.util.util.DateUtil;
 import com.github.houbb.id.core.util.IdHelper;
+import com.github.houbb.load.balance.api.ILoadBalance;
 import com.github.houbb.log.integration.core.Log;
 import com.github.houbb.log.integration.core.LogFactory;
 import com.github.houbb.mq.broker.dto.BrokerRegisterReq;
@@ -82,6 +83,12 @@ public class ProducerBrokerService implements IProducerBrokerService{
      */
     private IStatusManager statusManager;
 
+    /**
+     * 负载均衡策略
+     * @since 0.0.7
+     */
+    private ILoadBalance<RpcChannelFuture> loadBalance;
+
     @Override
     public void initChannelFutureList(ProducerBrokerConfig config) {
         //1. 配置初始化
@@ -91,6 +98,7 @@ public class ProducerBrokerService implements IProducerBrokerService{
         this.brokerAddress = config.brokerAddress();
         this.groupName = config.groupName();
         this.statusManager = config.statusManager();
+        this.loadBalance = config.loadBalance();
 
         //2. 初始化
         this.channelFutureList = ChannelFutureUtils.initChannelFutureList(brokerAddress,
@@ -187,7 +195,8 @@ public class ProducerBrokerService implements IProducerBrokerService{
             DateUtil.sleep(100);
         }
 
-        RpcChannelFuture rpcChannelFuture = RandomUtils.random(channelFutureList, key);
+        RpcChannelFuture rpcChannelFuture = RandomUtils.loadBalance(this.loadBalance,
+                channelFutureList, key);
         return rpcChannelFuture.getChannelFuture().channel();
     }
 

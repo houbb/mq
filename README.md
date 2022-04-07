@@ -158,11 +158,9 @@ System.out.println(JSON.toJSON(sendResult));
 
 - [x] 优雅关闭添加超时设置
   
-- [ ] heartbeat 心跳检测机制
+- [x] heartbeat 心跳检测机制
 
-- [ ] 完善 load-balance 实现
-
-基于 weight 的负载均衡
+- [x] 完善 load-balance 实现 + shardingkey 粘性消费、请求
 
 - [ ] 失败重试的拓展
 
@@ -183,8 +181,6 @@ fail-over
 - [ ] dead message 死信队列
 
 - [ ] 顺序消息
-
-基于 sharding key
 
 - [ ] 消息的回溯消费
 

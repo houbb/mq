@@ -6,7 +6,9 @@
 package com.github.houbb.mq.broker.api;
 
 
+import com.github.houbb.load.balance.api.ILoadBalance;
 import com.github.houbb.mq.broker.dto.ServiceEntry;
+import com.github.houbb.mq.broker.dto.consumer.ConsumerSubscribeBo;
 import com.github.houbb.mq.broker.dto.consumer.ConsumerSubscribeReq;
 import com.github.houbb.mq.broker.dto.consumer.ConsumerUnSubscribeReq;
 import com.github.houbb.mq.common.dto.req.MqHeartBeatReq;
@@ -26,6 +28,13 @@ import java.util.List;
  * @since 0.0.3
  */
 public interface IBrokerConsumerService {
+
+    /**
+     * 设置负载均衡策略
+     * @param loadBalance 负载均衡
+     * @since 0.0.7
+     */
+     void loadBalance(ILoadBalance<ConsumerSubscribeBo> loadBalance);
 
     /**
      * 注册当前服务信息

@@ -1,5 +1,7 @@
 package com.github.houbb.mq.consumer.support.broker;
 
+import com.github.houbb.load.balance.api.ILoadBalance;
+import com.github.houbb.mq.common.rpc.RpcChannelFuture;
 import com.github.houbb.mq.common.support.invoke.IInvokeService;
 import com.github.houbb.mq.common.support.status.IStatusManager;
 import com.github.houbb.mq.consumer.support.listener.IMqListenerService;
@@ -49,6 +51,12 @@ public class ConsumerBrokerConfig {
      * @since 0.0.5
      */
     private IMqListenerService mqListenerService;
+
+    /**
+     * 负载均衡
+     * @since 0.0.7
+     */
+    private ILoadBalance<RpcChannelFuture> loadBalance;
 
     public static ConsumerBrokerConfig newInstance() {
         return new ConsumerBrokerConfig();
@@ -114,6 +122,15 @@ public class ConsumerBrokerConfig {
 
     public ConsumerBrokerConfig mqListenerService(IMqListenerService mqListenerService) {
         this.mqListenerService = mqListenerService;
+        return this;
+    }
+
+    public ILoadBalance<RpcChannelFuture> loadBalance() {
+        return loadBalance;
+    }
+
+    public ConsumerBrokerConfig loadBalance(ILoadBalance<RpcChannelFuture> loadBalance) {
+        this.loadBalance = loadBalance;
         return this;
     }
 }

@@ -1,10 +1,13 @@
 package com.github.houbb.mq.producer.core;
 
 import com.github.houbb.heaven.util.common.ArgUtil;
+import com.github.houbb.load.balance.api.ILoadBalance;
+import com.github.houbb.load.balance.api.impl.LoadBalances;
 import com.github.houbb.log.integration.core.Log;
 import com.github.houbb.log.integration.core.LogFactory;
 import com.github.houbb.mq.common.dto.req.MqMessage;
 import com.github.houbb.mq.common.resp.MqException;
+import com.github.houbb.mq.common.rpc.RpcChannelFuture;
 import com.github.houbb.mq.common.support.hook.DefaultShutdownHook;
 import com.github.houbb.mq.common.support.hook.ShutdownHooks;
 import com.github.houbb.mq.common.support.invoke.IInvokeService;
@@ -74,6 +77,18 @@ public class MqProducer extends Thread implements IMqProducer {
      */
     private long waitMillsForRemainRequest = 60 * 1000;
 
+    /**
+     * 负载均衡策略
+     * @since 0.0.7
+     */
+    private ILoadBalance<RpcChannelFuture> loadBalance = LoadBalances.weightRoundRobbin();
+
+    public void setLoadBalance(ILoadBalance<RpcChannelFuture> loadBalance) {
+        ArgUtil.notNull(loadBalance, "loadBalance");
+
+        this.loadBalance = loadBalance;
+    }
+
     public void setGroupName(String groupName) {
         ArgUtil.notEmpty(groupName, "groupName");
 
@@ -122,7 +137,8 @@ public class MqProducer extends Thread implements IMqProducer {
                     .check(check)
                     .respTimeoutMills(respTimeoutMills)
                     .invokeService(invokeService)
-                    .statusManager(statusManager);
+                    .statusManager(statusManager)
+                    .loadBalance(loadBalance);
 
             //1. 初始化
             this.producerBrokerService.initChannelFutureList(config);

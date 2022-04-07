@@ -3,6 +3,7 @@ package com.github.houbb.mq.broker.support.api;
 import com.alibaba.fastjson.JSON;
 import com.github.houbb.heaven.util.util.CollectionUtil;
 import com.github.houbb.heaven.util.util.regex.RegexUtil;
+import com.github.houbb.load.balance.api.ILoadBalance;
 import com.github.houbb.log.integration.core.Log;
 import com.github.houbb.log.integration.core.LogFactory;
 import com.github.houbb.mq.broker.api.IBrokerConsumerService;
@@ -58,6 +59,12 @@ public class LocalBrokerConsumerService implements IBrokerConsumerService {
      */
     private static final ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
 
+    /**
+     * 负载均衡策略
+     * @since 0.0.7
+     */
+    private ILoadBalance<ConsumerSubscribeBo> loadBalance;
+
     public LocalBrokerConsumerService() {
         //120S 扫描一次
         final long limitMills = 2 * 60 * 1000;
@@ -75,6 +82,11 @@ public class LocalBrokerConsumerService implements IBrokerConsumerService {
                 }
             }
         }, 2 * 60, 2 * 60, TimeUnit.SECONDS);
+    }
+
+    @Override
+    public void loadBalance(ILoadBalance<ConsumerSubscribeBo> loadBalance) {
+        this.loadBalance = loadBalance;
     }
 
     @Override
@@ -197,7 +209,7 @@ public class LocalBrokerConsumerService implements IBrokerConsumerService {
         for(Map.Entry<String, List<ConsumerSubscribeBo>> entry : groupMap.entrySet()) {
             List<ConsumerSubscribeBo> list = entry.getValue();
 
-            ConsumerSubscribeBo bo = RandomUtils.random(list, shardingKey);
+            ConsumerSubscribeBo bo = RandomUtils.loadBalance(loadBalance, list, shardingKey);
             final String channelId = bo.getChannelId();
             BrokerServiceEntryChannel entryChannel = registerMap.get(channelId);
             if(entryChannel == null) {

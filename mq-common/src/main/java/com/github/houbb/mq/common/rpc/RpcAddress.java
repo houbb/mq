@@ -1,10 +1,12 @@
 package com.github.houbb.mq.common.rpc;
 
+import com.github.houbb.load.balance.support.server.IServer;
+
 /**
  * @author binbin.hou
  * @since 1.0.0
  */
-public class RpcAddress {
+public class RpcAddress implements IServer {
 
     /**
      * address 信息
@@ -46,5 +48,15 @@ public class RpcAddress {
 
     public void setWeight(int weight) {
         this.weight = weight;
+    }
+
+    @Override
+    public String url() {
+        return this.address+":"+port;
+    }
+
+    @Override
+    public int weight() {
+        return this.weight;
     }
 }

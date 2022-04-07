@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.github.houbb.heaven.util.net.NetUtil;
 import com.github.houbb.heaven.util.util.DateUtil;
 import com.github.houbb.id.core.util.IdHelper;
+import com.github.houbb.load.balance.api.ILoadBalance;
 import com.github.houbb.log.integration.core.Log;
 import com.github.houbb.log.integration.core.LogFactory;
 import com.github.houbb.mq.broker.dto.BrokerRegisterReq;
@@ -101,6 +102,12 @@ public class ConsumerBrokerService implements IConsumerBrokerService {
      */
     private final ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
 
+    /**
+     * 负载均衡策略
+     * @since 0.0.7
+     */
+    private ILoadBalance<RpcChannelFuture> loadBalance;
+
     @Override
     public void initChannelFutureList(ConsumerBrokerConfig config) {
         //1. 配置初始化
@@ -111,6 +118,7 @@ public class ConsumerBrokerService implements IConsumerBrokerService {
         this.groupName = config.groupName();
         this.statusManager = config.statusManager();
         this.mqListenerService = config.mqListenerService();
+        this.loadBalance = config.loadBalance();
 
         //2. 初始化
         this.channelFutureList = ChannelFutureUtils.initChannelFutureList(brokerAddress,
@@ -225,7 +233,8 @@ public class ConsumerBrokerService implements IConsumerBrokerService {
             DateUtil.sleep(100);
         }
 
-        RpcChannelFuture rpcChannelFuture = RandomUtils.random(channelFutureList, key);
+        RpcChannelFuture rpcChannelFuture = RandomUtils.loadBalance(loadBalance,
+                channelFutureList, key);
         return rpcChannelFuture.getChannelFuture().channel();
     }
 
