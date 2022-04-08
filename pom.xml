@@ -70,6 +70,12 @@
             <!--============================== INTER ==============================-->
             <dependency>
                 <groupId>com.github.houbb</groupId>
+                <artifactId>sisyphus-core</artifactId>
+                <version>0.1.0</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.github.houbb</groupId>
                 <artifactId>id-core</artifactId>
                 <version>0.0.6</version>
             </dependency>

@@ -58,8 +58,38 @@ public class ConsumerBrokerConfig {
      */
     private ILoadBalance<RpcChannelFuture> loadBalance;
 
+    /**
+     * 订阅最大尝试次数
+     * @since 0.0.8
+     */
+    private int subscribeMaxAttempt = 3;
+
+    /**
+     * 取消订阅最大尝试次数
+     * @since 0.0.8
+     */
+    private int unSubscribeMaxAttempt = 3;
+
     public static ConsumerBrokerConfig newInstance() {
         return new ConsumerBrokerConfig();
+    }
+
+    public int subscribeMaxAttempt() {
+        return subscribeMaxAttempt;
+    }
+
+    public ConsumerBrokerConfig subscribeMaxAttempt(int subscribeMaxAttempt) {
+        this.subscribeMaxAttempt = subscribeMaxAttempt;
+        return this;
+    }
+
+    public int unSubscribeMaxAttempt() {
+        return unSubscribeMaxAttempt;
+    }
+
+    public ConsumerBrokerConfig unSubscribeMaxAttempt(int unSubscribeMaxAttempt) {
+        this.unSubscribeMaxAttempt = unSubscribeMaxAttempt;
+        return this;
     }
 
     public String groupName() {

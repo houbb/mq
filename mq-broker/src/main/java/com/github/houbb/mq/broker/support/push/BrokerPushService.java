@@ -3,6 +3,7 @@ package com.github.houbb.mq.broker.support.push;
 import com.alibaba.fastjson.JSON;
 import com.github.houbb.log.integration.core.Log;
 import com.github.houbb.log.integration.core.LogFactory;
+import com.github.houbb.mq.broker.constant.BrokerRespCode;
 import com.github.houbb.mq.broker.support.persist.IMqBrokerPersist;
 import com.github.houbb.mq.common.constant.MethodType;
 import com.github.houbb.mq.common.dto.req.MqCommonReq;
@@ -16,10 +17,12 @@ import com.github.houbb.mq.common.rpc.RpcMessageDto;
 import com.github.houbb.mq.common.support.invoke.IInvokeService;
 import com.github.houbb.mq.common.util.ChannelUtil;
 import com.github.houbb.mq.common.util.DelimiterUtil;
+import com.github.houbb.sisyphus.core.core.Retryer;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 
 import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -39,22 +42,40 @@ public class BrokerPushService implements IBrokerPushService {
             @Override
             public void run() {
                 log.info("开始异步处理 {}", JSON.toJSON(context));
-                final List<Channel> channelList = context.getChannelList();
-                final IMqBrokerPersist mqBrokerPersist = context.getMqBrokerPersist();
-                final MqMessage mqMessage = context.getMqMessage();
+                final List<Channel> channelList = context.channelList();
+                final IMqBrokerPersist mqBrokerPersist = context.mqBrokerPersist();
+                final MqMessage mqMessage = context.mqMessage();
                 final String messageId = mqMessage.getTraceId();
-                final IInvokeService invokeService = context.getInvokeService();
-                final long responseTime = context.getRespTimeoutMills();
+                final IInvokeService invokeService = context.invokeService();
+                final long responseTime = context.respTimeoutMills();
+                final int pushMaxAttempt = context.pushMaxAttempt();
 
-                for(Channel channel : channelList) {
+                for(final Channel channel : channelList) {
                     try {
                         String channelId = ChannelUtil.getChannelId(channel);
 
                         log.info("开始处理 channelId: {}", channelId);
                         //1. 调用
                         mqMessage.setMethodType(MethodType.B_MESSAGE_PUSH);
-                        MqConsumerResultResp resultResp = callServer(channel, mqMessage,
-                                MqConsumerResultResp.class, invokeService, responseTime);
+
+                        // 重试推送
+                        MqConsumerResultResp resultResp = Retryer.<MqConsumerResultResp>newInstance()
+                                .maxAttempt(pushMaxAttempt)
+                                .callable(new Callable<MqConsumerResultResp>() {
+                                    @Override
+                                    public MqConsumerResultResp call() throws Exception {
+                                        MqConsumerResultResp resp = callServer(channel, mqMessage,
+                                                MqConsumerResultResp.class, invokeService, responseTime);
+
+                                        // 失败校验
+                                        if(resp == null
+                                            || !ConsumerStatus.SUCCESS.getCode()
+                                                .equals(resp.getConsumerStatus())) {
+                                            throw new MqException(BrokerRespCode.MSG_PUSH_FAILED);
+                                        }
+                                        return resp;
+                                    }
+                                }).retryCall();
 
                         //2. 更新状态
                         mqBrokerPersist.updateStatus(messageId, resultResp.getConsumerStatus());

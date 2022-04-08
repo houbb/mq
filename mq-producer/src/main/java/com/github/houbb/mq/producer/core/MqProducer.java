@@ -83,34 +83,45 @@ public class MqProducer extends Thread implements IMqProducer {
      */
     private ILoadBalance<RpcChannelFuture> loadBalance = LoadBalances.weightRoundRobbin();
 
-    public void setLoadBalance(ILoadBalance<RpcChannelFuture> loadBalance) {
-        ArgUtil.notNull(loadBalance, "loadBalance");
+    /**
+     * 消息发送最大尝试次数
+     * @since 0.0.8
+     */
+    private int maxAttempt = 3;
 
-        this.loadBalance = loadBalance;
-    }
-
-    public void setGroupName(String groupName) {
-        ArgUtil.notEmpty(groupName, "groupName");
-
+    public MqProducer groupName(String groupName) {
         this.groupName = groupName;
+        return this;
     }
 
-    public void setBrokerAddress(String brokerAddress) {
-        ArgUtil.notEmpty(brokerAddress, "brokerAddress");
-
+    public MqProducer brokerAddress(String brokerAddress) {
         this.brokerAddress = brokerAddress;
+        return this;
     }
 
-    public void setRespTimeoutMills(long respTimeoutMills) {
+    public MqProducer respTimeoutMills(long respTimeoutMills) {
         this.respTimeoutMills = respTimeoutMills;
+        return this;
     }
 
-    public void setCheck(boolean check) {
+    public MqProducer check(boolean check) {
         this.check = check;
+        return this;
     }
 
-    public void setWaitMillsForRemainRequest(long waitMillsForRemainRequest) {
+    public MqProducer waitMillsForRemainRequest(long waitMillsForRemainRequest) {
         this.waitMillsForRemainRequest = waitMillsForRemainRequest;
+        return this;
+    }
+
+    public MqProducer loadBalance(ILoadBalance<RpcChannelFuture> loadBalance) {
+        this.loadBalance = loadBalance;
+        return this;
+    }
+
+    public MqProducer maxAttempt(int maxAttempt) {
+        this.maxAttempt = maxAttempt;
+        return this;
     }
 
     /**
@@ -138,7 +149,8 @@ public class MqProducer extends Thread implements IMqProducer {
                     .respTimeoutMills(respTimeoutMills)
                     .invokeService(invokeService)
                     .statusManager(statusManager)
-                    .loadBalance(loadBalance);
+                    .loadBalance(loadBalance)
+                    .maxAttempt(maxAttempt);
 
             //1. 初始化
             this.producerBrokerService.initChannelFutureList(config);

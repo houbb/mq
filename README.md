@@ -162,23 +162,15 @@ System.out.println(JSON.toJSON(sendResult));
 
 - [x] 完善 load-balance 实现 + shardingkey 粘性消费、请求
 
-- [ ] 失败重试的拓展
-
-fail-fast
-
-fail-over
-  
-指定重试策略（sisyphus）
-
-最大重试次数，重试间隔时间
-
-- [ ] offline message 离线消息
+- [x] 失败重试的拓展
 
 - [ ] 消费者 pull 策略实现
 
-- [ ] broker springboot 实现
+- [ ] offline message 离线消息
 
 - [ ] dead message 死信队列
+
+- [ ] broker springboot 实现
 
 - [ ] 顺序消息
 

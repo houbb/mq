@@ -8,7 +8,8 @@ import com.github.houbb.heaven.response.respcode.RespCode;
  */
 public enum ProducerRespCode implements RespCode {
 
-    RPC_INIT_FAILED("P00001", "生产者启动失败");
+    RPC_INIT_FAILED("P00001", "生产者启动失败"),
+    MSG_SEND_FAILED("P00002", "生产者消息发送失败");
 
     private final String code;
     private final String msg;

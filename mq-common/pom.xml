@@ -29,6 +29,10 @@
             <groupId>com.github.houbb</groupId>
             <artifactId>id-core</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.github.houbb</groupId>
+            <artifactId>sisyphus-core</artifactId>
+        </dependency>
 
         <!--============================== OTHER ==============================-->
         <dependency>

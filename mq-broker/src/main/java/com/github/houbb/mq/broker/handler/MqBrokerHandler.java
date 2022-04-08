@@ -78,28 +78,45 @@ public class MqBrokerHandler extends SimpleChannelInboundHandler {
      */
     private long respTimeoutMills;
 
-    public void setRespTimeoutMills(long respTimeoutMills) {
-        this.respTimeoutMills = respTimeoutMills;
-    }
+    /**
+     * 推送最大尝试次数
+     * @since 0.0.8
+     */
+    private int pushMaxAttempt;
 
-    public void setInvokeService(IInvokeService invokeService) {
+    public MqBrokerHandler invokeService(IInvokeService invokeService) {
         this.invokeService = invokeService;
+        return this;
     }
 
-    public void setRegisterConsumerService(IBrokerConsumerService registerConsumerService) {
+    public MqBrokerHandler registerConsumerService(IBrokerConsumerService registerConsumerService) {
         this.registerConsumerService = registerConsumerService;
+        return this;
     }
 
-    public void setRegisterProducerService(IBrokerProducerService registerProducerService) {
+    public MqBrokerHandler registerProducerService(IBrokerProducerService registerProducerService) {
         this.registerProducerService = registerProducerService;
+        return this;
     }
 
-    public void setMqBrokerPersist(IMqBrokerPersist mqBrokerPersist) {
+    public MqBrokerHandler mqBrokerPersist(IMqBrokerPersist mqBrokerPersist) {
         this.mqBrokerPersist = mqBrokerPersist;
+        return this;
     }
 
-    public void setBrokerPushService(IBrokerPushService brokerPushService) {
+    public MqBrokerHandler brokerPushService(IBrokerPushService brokerPushService) {
         this.brokerPushService = brokerPushService;
+        return this;
+    }
+
+    public MqBrokerHandler respTimeoutMills(long respTimeoutMills) {
+        this.respTimeoutMills = respTimeoutMills;
+        return this;
+    }
+
+    public MqBrokerHandler pushMaxAttempt(int pushMaxAttempt) {
+        this.pushMaxAttempt = pushMaxAttempt;
+        return this;
     }
 
     @Override
@@ -242,12 +259,13 @@ public class MqBrokerHandler extends SimpleChannelInboundHandler {
             return;
         }
 
-        BrokerPushContext brokerPushContext = new BrokerPushContext();
-        brokerPushContext.setChannelList(channelList);
-        brokerPushContext.setMqMessage(mqMessage);
-        brokerPushContext.setMqBrokerPersist(mqBrokerPersist);
-        brokerPushContext.setInvokeService(invokeService);
-        brokerPushContext.setRespTimeoutMills(respTimeoutMills);
+        BrokerPushContext brokerPushContext = BrokerPushContext.newInstance()
+                .channelList(channelList)
+                .mqMessage(mqMessage)
+                .mqBrokerPersist(mqBrokerPersist)
+                .invokeService(invokeService)
+                .respTimeoutMills(respTimeoutMills)
+                .pushMaxAttempt(pushMaxAttempt);
 
         brokerPushService.asyncPush(brokerPushContext);
     }

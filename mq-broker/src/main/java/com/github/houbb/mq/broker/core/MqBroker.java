@@ -41,7 +41,7 @@ public class MqBroker extends Thread implements IMqBroker {
     /**
      * 端口号
      */
-    private final int port;
+    private int port = BrokerConst.DEFAULT_PORT;
 
     /**
      * 调用管理类
@@ -90,55 +90,59 @@ public class MqBroker extends Thread implements IMqBroker {
      */
     private ILoadBalance<ConsumerSubscribeBo> loadBalance = LoadBalances.weightRoundRobbin();
 
-    public MqBroker() {
-        this(BrokerConst.DEFAULT_PORT);
-    }
+    /**
+     * 推送最大尝试次数
+     * @since 0.0.8
+     */
+    private int pushMaxAttempt = 3;
 
-    public MqBroker(int port) {
+    public MqBroker port(int port) {
         this.port = port;
+        return this;
     }
 
-    public void setLoadBalance(ILoadBalance<ConsumerSubscribeBo> loadBalance) {
-        ArgUtil.notNull(loadBalance, "loadBalance");
-
-        this.loadBalance = loadBalance;
-    }
-
-    public void setRegisterConsumerService(IBrokerConsumerService registerConsumerService) {
-        ArgUtil.notNull(registerConsumerService, "registerConsumerService");
+    public MqBroker registerConsumerService(IBrokerConsumerService registerConsumerService) {
         this.registerConsumerService = registerConsumerService;
+        return this;
     }
 
-    public void setRegisterProducerService(IBrokerProducerService registerProducerService) {
-        ArgUtil.notNull(registerProducerService, "registerProducerService");
+    public MqBroker registerProducerService(IBrokerProducerService registerProducerService) {
         this.registerProducerService = registerProducerService;
+        return this;
     }
 
-    public void setMqBrokerPersist(IMqBrokerPersist mqBrokerPersist) {
-        ArgUtil.notNull(mqBrokerPersist, "mqBrokerPersist");
-
+    public MqBroker mqBrokerPersist(IMqBrokerPersist mqBrokerPersist) {
         this.mqBrokerPersist = mqBrokerPersist;
+        return this;
     }
 
-    public void setBrokerPushService(IBrokerPushService brokerPushService) {
-        ArgUtil.notNull(brokerPushService, "brokerPushService");
-
+    public MqBroker brokerPushService(IBrokerPushService brokerPushService) {
         this.brokerPushService = brokerPushService;
+        return this;
     }
 
-    public void setRespTimeoutMills(long respTimeoutMills) {
+    public MqBroker respTimeoutMills(long respTimeoutMills) {
         this.respTimeoutMills = respTimeoutMills;
+        return this;
+    }
+
+    public MqBroker loadBalance(ILoadBalance<ConsumerSubscribeBo> loadBalance) {
+        this.loadBalance = loadBalance;
+        return this;
     }
 
     private ChannelHandler initChannelHandler() {
-        MqBrokerHandler handler = new MqBrokerHandler();
-        handler.setInvokeService(invokeService);
         registerConsumerService.loadBalance(this.loadBalance);
-        handler.setRegisterConsumerService(registerConsumerService);
-        handler.setRegisterProducerService(registerProducerService);
-        handler.setMqBrokerPersist(mqBrokerPersist);
-        handler.setBrokerPushService(brokerPushService);
-        handler.setRespTimeoutMills(respTimeoutMills);
+
+        MqBrokerHandler handler = new MqBrokerHandler();
+        handler.invokeService(invokeService)
+                .respTimeoutMills(respTimeoutMills)
+                .registerConsumerService(registerConsumerService)
+                .registerProducerService(registerProducerService)
+                .mqBrokerPersist(mqBrokerPersist)
+                .brokerPushService(brokerPushService)
+                .respTimeoutMills(respTimeoutMills)
+                .pushMaxAttempt(pushMaxAttempt);
 
         return handler;
     }

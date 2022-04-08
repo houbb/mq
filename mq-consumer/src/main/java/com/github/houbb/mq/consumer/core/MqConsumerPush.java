@@ -92,30 +92,56 @@ public class MqConsumerPush extends Thread implements IMqConsumer  {
      */
     private ILoadBalance<RpcChannelFuture> loadBalance = LoadBalances.weightRoundRobbin();
 
-    public void setLoadBalance(ILoadBalance<RpcChannelFuture> loadBalance) {
-        ArgUtil.notNull(loadBalance, "loadBalance");
+    /**
+     * 订阅最大尝试次数
+     * @since 0.0.8
+     */
+    private int subscribeMaxAttempt = 3;
 
-        this.loadBalance = loadBalance;
+    /**
+     * 取消订阅最大尝试次数
+     * @since 0.0.8
+     */
+    private int unSubscribeMaxAttempt = 3;
+
+    public MqConsumerPush subscribeMaxAttempt(int subscribeMaxAttempt) {
+        this.subscribeMaxAttempt = subscribeMaxAttempt;
+        return this;
     }
 
-    public void setGroupName(String groupName) {
+    public MqConsumerPush unSubscribeMaxAttempt(int unSubscribeMaxAttempt) {
+        this.unSubscribeMaxAttempt = unSubscribeMaxAttempt;
+        return this;
+    }
+
+    public MqConsumerPush groupName(String groupName) {
         this.groupName = groupName;
+        return this;
     }
 
-    public void setWaitMillsForRemainRequest(long waitMillsForRemainRequest) {
-        this.waitMillsForRemainRequest = waitMillsForRemainRequest;
-    }
-
-    public void setRespTimeoutMills(long respTimeoutMills) {
-        this.respTimeoutMills = respTimeoutMills;
-    }
-
-    public void setBrokerAddress(String brokerAddress) {
+    public MqConsumerPush brokerAddress(String brokerAddress) {
         this.brokerAddress = brokerAddress;
+        return this;
     }
 
-    public void setCheck(boolean check) {
+    public MqConsumerPush respTimeoutMills(long respTimeoutMills) {
+        this.respTimeoutMills = respTimeoutMills;
+        return this;
+    }
+
+    public MqConsumerPush check(boolean check) {
         this.check = check;
+        return this;
+    }
+
+    public MqConsumerPush waitMillsForRemainRequest(long waitMillsForRemainRequest) {
+        this.waitMillsForRemainRequest = waitMillsForRemainRequest;
+        return this;
+    }
+
+    public MqConsumerPush loadBalance(ILoadBalance<RpcChannelFuture> loadBalance) {
+        this.loadBalance = loadBalance;
+        return this;
     }
 
     /**
@@ -145,7 +171,9 @@ public class MqConsumerPush extends Thread implements IMqConsumer  {
                     .invokeService(invokeService)
                     .statusManager(statusManager)
                     .mqListenerService(mqListenerService)
-                    .loadBalance(loadBalance);
+                    .loadBalance(loadBalance)
+                    .subscribeMaxAttempt(subscribeMaxAttempt)
+                    .unSubscribeMaxAttempt(unSubscribeMaxAttempt);
 
             //1. 初始化
             this.consumerBrokerService.initChannelFutureList(config);

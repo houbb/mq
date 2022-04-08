@@ -23,10 +23,12 @@ import com.github.houbb.mq.common.util.ChannelFutureUtils;
 import com.github.houbb.mq.common.util.ChannelUtil;
 import com.github.houbb.mq.common.util.DelimiterUtil;
 import com.github.houbb.mq.common.util.RandomUtils;
+import com.github.houbb.mq.producer.constant.ProducerRespCode;
 import com.github.houbb.mq.producer.constant.SendStatus;
 import com.github.houbb.mq.producer.core.MqProducer;
 import com.github.houbb.mq.producer.dto.SendResult;
 import com.github.houbb.mq.producer.handler.MqProducerHandler;
+import com.github.houbb.sisyphus.core.core.Retryer;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;
@@ -34,6 +36,7 @@ import io.netty.channel.ChannelInitializer;
 import io.netty.handler.codec.DelimiterBasedFrameDecoder;
 
 import java.util.List;
+import java.util.concurrent.Callable;
 
 /**
  * @author binbin.hou
@@ -89,6 +92,12 @@ public class ProducerBrokerService implements IProducerBrokerService{
      */
     private ILoadBalance<RpcChannelFuture> loadBalance;
 
+    /**
+     * 消息发送最大尝试次数
+     * @since 0.0.8
+     */
+    private int maxAttempt = 3;
+
     @Override
     public void initChannelFutureList(ProducerBrokerConfig config) {
         //1. 配置初始化
@@ -99,6 +108,7 @@ public class ProducerBrokerService implements IProducerBrokerService{
         this.groupName = config.groupName();
         this.statusManager = config.statusManager();
         this.loadBalance = config.loadBalance();
+        this.maxAttempt = config.maxAttempt();
 
         //2. 初始化
         this.channelFutureList = ChannelFutureUtils.initChannelFutureList(brokerAddress,
@@ -201,11 +211,25 @@ public class ProducerBrokerService implements IProducerBrokerService{
     }
 
     @Override
-    public SendResult send(MqMessage mqMessage) {
-        String messageId = IdHelper.uuid32();
+    public SendResult send(final MqMessage mqMessage) {
+        final String messageId = IdHelper.uuid32();
         mqMessage.setTraceId(messageId);
         mqMessage.setMethodType(MethodType.P_SEND_MSG);
         mqMessage.setGroupName(groupName);
+
+        return Retryer.<SendResult>newInstance()
+                .maxAttempt(maxAttempt)
+                .callable(new Callable<SendResult>() {
+                    @Override
+                    public SendResult call() throws Exception {
+                        return doSend(messageId, mqMessage);
+                    }
+                }).retryCall();
+    }
+
+    private SendResult doSend(String messageId, MqMessage mqMessage) {
+        log.info("[Producer] 发送消息 messageId: {}, mqMessage: {}",
+                messageId, JSON.toJSON(mqMessage));
 
         Channel channel = getChannel(mqMessage.getShardingKey());
         MqCommonResp resp = callServer(channel, mqMessage, MqCommonResp.class);
@@ -213,7 +237,7 @@ public class ProducerBrokerService implements IProducerBrokerService{
             return SendResult.of(messageId, SendStatus.SUCCESS);
         }
 
-        return SendResult.of(messageId, SendStatus.FAILED);
+        throw new MqException(ProducerRespCode.MSG_SEND_FAILED);
     }
 
     @Override

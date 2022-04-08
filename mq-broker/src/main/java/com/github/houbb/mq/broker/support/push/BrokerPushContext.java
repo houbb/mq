@@ -27,44 +27,67 @@ public class BrokerPushContext {
      */
     private long respTimeoutMills;
 
+    /**
+     * 推送最大尝试次数
+     * @since 0.0.8
+     */
+    private int pushMaxAttempt;
 
-    public IMqBrokerPersist getMqBrokerPersist() {
+    public static BrokerPushContext newInstance() {
+        return new BrokerPushContext();
+    }
+
+    public IMqBrokerPersist mqBrokerPersist() {
         return mqBrokerPersist;
     }
 
-    public void setMqBrokerPersist(IMqBrokerPersist mqBrokerPersist) {
+    public BrokerPushContext mqBrokerPersist(IMqBrokerPersist mqBrokerPersist) {
         this.mqBrokerPersist = mqBrokerPersist;
+        return this;
     }
 
-    public MqMessage getMqMessage() {
+    public MqMessage mqMessage() {
         return mqMessage;
     }
 
-    public void setMqMessage(MqMessage mqMessage) {
+    public BrokerPushContext mqMessage(MqMessage mqMessage) {
         this.mqMessage = mqMessage;
+        return this;
     }
 
-    public List<Channel> getChannelList() {
+    public List<Channel> channelList() {
         return channelList;
     }
 
-    public void setChannelList(List<Channel> channelList) {
+    public BrokerPushContext channelList(List<Channel> channelList) {
         this.channelList = channelList;
+        return this;
     }
 
-    public IInvokeService getInvokeService() {
+    public IInvokeService invokeService() {
         return invokeService;
     }
 
-    public void setInvokeService(IInvokeService invokeService) {
+    public BrokerPushContext invokeService(IInvokeService invokeService) {
         this.invokeService = invokeService;
+        return this;
     }
 
-    public long getRespTimeoutMills() {
+    public long respTimeoutMills() {
         return respTimeoutMills;
     }
 
-    public void setRespTimeoutMills(long respTimeoutMills) {
+    public BrokerPushContext respTimeoutMills(long respTimeoutMills) {
         this.respTimeoutMills = respTimeoutMills;
+        return this;
+    }
+
+    public int pushMaxAttempt() {
+        return pushMaxAttempt;
+    }
+
+    public BrokerPushContext pushMaxAttempt(int pushMaxAttempt) {
+        this.pushMaxAttempt = pushMaxAttempt;
+        return this;
     }
 }

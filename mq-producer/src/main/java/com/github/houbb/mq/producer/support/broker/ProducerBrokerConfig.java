@@ -51,8 +51,23 @@ public class ProducerBrokerConfig {
      */
     private ILoadBalance<RpcChannelFuture> loadBalance;
 
+    /**
+     * 最大尝试次数
+     * @since 0.0.8
+     */
+    private int maxAttempt;
+
     public static ProducerBrokerConfig newInstance() {
         return new ProducerBrokerConfig();
+    }
+
+    public int maxAttempt() {
+        return maxAttempt;
+    }
+
+    public ProducerBrokerConfig maxAttempt(int maxAttempt) {
+        this.maxAttempt = maxAttempt;
+        return this;
     }
 
     public String groupName() {
