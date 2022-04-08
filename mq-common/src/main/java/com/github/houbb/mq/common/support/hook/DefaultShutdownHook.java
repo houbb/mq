@@ -103,7 +103,7 @@ public class DefaultShutdownHook extends AbstractShutdownHook {
             }
 
             logger.debug("[Shutdown] still remains request, wait for a while.");
-            DateUtil.sleep(10);
+            DateUtil.sleep(100);
         }
 
         // 销毁

@@ -5,6 +5,7 @@ import com.github.houbb.load.balance.api.ILoadBalance;
 import com.github.houbb.load.balance.api.impl.LoadBalances;
 import com.github.houbb.log.integration.core.Log;
 import com.github.houbb.log.integration.core.LogFactory;
+import com.github.houbb.mq.common.constant.ConsumerTypeConst;
 import com.github.houbb.mq.common.resp.MqException;
 import com.github.houbb.mq.common.rpc.RpcChannelFuture;
 import com.github.houbb.mq.common.support.hook.DefaultShutdownHook;
@@ -36,73 +37,73 @@ public class MqConsumerPush extends Thread implements IMqConsumer  {
     /**
      * 组名称
      */
-    private String groupName = ConsumerConst.DEFAULT_GROUP_NAME;
+    protected String groupName = ConsumerConst.DEFAULT_GROUP_NAME;
 
     /**
      * 中间人地址
      */
-    private String brokerAddress  = "127.0.0.1:9999";
+    protected String brokerAddress  = "127.0.0.1:9999";
 
     /**
      * 获取响应超时时间
      * @since 0.0.2
      */
-    private long respTimeoutMills = 5000;
+    protected long respTimeoutMills = 5000;
 
     /**
      * 检测 broker 可用性
      * @since 0.0.4
      */
-    private volatile boolean check = true;
+    protected volatile boolean check = true;
 
     /**
      * 为剩余的请求等待时间
      * @since 0.0.5
      */
-    private long waitMillsForRemainRequest = 60 * 1000;
+    protected long waitMillsForRemainRequest = 60 * 1000;
 
     /**
      * 调用管理类
      *
      * @since 1.0.0
      */
-    private final IInvokeService invokeService = new InvokeService();
+    protected final IInvokeService invokeService = new InvokeService();
 
     /**
      * 消息监听服务类
      * @since 0.0.5
      */
-    private final IMqListenerService mqListenerService = new MqListenerService();
+    protected final IMqListenerService mqListenerService = new MqListenerService();
 
     /**
      * 状态管理类
      * @since 0.0.5
      */
-    private final IStatusManager statusManager = new StatusManager();
+    protected final IStatusManager statusManager = new StatusManager();
 
     /**
      * 生产者-中间服务端服务类
      * @since 0.0.5
      */
-    private final IConsumerBrokerService consumerBrokerService = new ConsumerBrokerService();
+    protected final IConsumerBrokerService consumerBrokerService = new ConsumerBrokerService();
 
     /**
      * 负载均衡策略
      * @since 0.0.7
      */
-    private ILoadBalance<RpcChannelFuture> loadBalance = LoadBalances.weightRoundRobbin();
+    protected ILoadBalance<RpcChannelFuture> loadBalance = LoadBalances.weightRoundRobbin();
 
     /**
      * 订阅最大尝试次数
      * @since 0.0.8
      */
-    private int subscribeMaxAttempt = 3;
+    protected int subscribeMaxAttempt = 3;
 
     /**
      * 取消订阅最大尝试次数
      * @since 0.0.8
      */
-    private int unSubscribeMaxAttempt = 3;
+    protected int unSubscribeMaxAttempt = 3;
 
     public MqConsumerPush subscribeMaxAttempt(int subscribeMaxAttempt) {
         this.subscribeMaxAttempt = subscribeMaxAttempt;
@@ -192,6 +193,9 @@ public class MqConsumerPush extends Thread implements IMqConsumer  {
             rpcShutdownHook.setDestroyable(this.consumerBrokerService);
             ShutdownHooks.rpcShutdownHook(rpcShutdownHook);
 
+            //5. 启动完成以后的事件
+            this.afterInit();
+
             log.info("MQ 消费者启动完成");
         } catch (Exception e) {
             log.error("MQ 消费者启动异常", e);
@@ -199,14 +203,23 @@ public class MqConsumerPush extends Thread implements IMqConsumer  {
         }
     }
 
+    /**
+     * 初始化完成以后
+     */
+    protected void afterInit() {
+
+    }
+
     @Override
     public void subscribe(String topicName, String tagRegex) {
-        consumerBrokerService.subscribe(topicName, tagRegex);
+        final String consumerType = getConsumerType();
+        consumerBrokerService.subscribe(topicName, tagRegex, consumerType);
     }
 
     @Override
     public void unSubscribe(String topicName, String tagRegex) {
-        consumerBrokerService.unSubscribe(topicName, tagRegex);
+        final String consumerType = getConsumerType();
+        consumerBrokerService.unSubscribe(topicName, tagRegex, consumerType);
     }
 
     @Override
@@ -214,5 +227,13 @@ public class MqConsumerPush extends Thread implements IMqConsumer  {
         this.mqListenerService.register(listener);
     }
 
+    /**
+     * 获取消费策略类型
+     * @return 类型
+     * @since 0.0.9
+     */
+    protected String getConsumerType() {
+        return ConsumerTypeConst.PUSH;
+    }
 
 }

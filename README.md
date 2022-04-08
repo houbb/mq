@@ -164,7 +164,9 @@ System.out.println(JSON.toJSON(sendResult));
 
 - [x] 失败重试的拓展
 
-- [ ] 消费者 pull 策略实现
+- [x] 消费者 pull 策略实现
+
+- [ ] pull 消息消费的 ACK 处理
 
 - [ ] offline message 离线消息
 
@@ -180,7 +182,7 @@ System.out.println(JSON.toJSON(sendResult));
 
 - [ ] 定时消息
 
-- [ ] 流量控制
+~~- [ ] 流量控制~~
 
 - [ ] 消息可靠性
 

@@ -1,10 +1,12 @@
 package com.github.houbb.mq.broker.support.persist;
 
 import com.alibaba.fastjson.JSON;
+import com.github.houbb.heaven.util.util.CollectionUtil;
 import com.github.houbb.log.integration.core.Log;
 import com.github.houbb.log.integration.core.LogFactory;
-import com.github.houbb.mq.broker.dto.persist.MqMessagePersistPull;
+import com.github.houbb.mq.broker.constant.MessageStatusConst;
 import com.github.houbb.mq.broker.dto.persist.MqMessagePersistPut;
+import com.github.houbb.mq.broker.utils.InnerRegexUtils;
 import com.github.houbb.mq.common.dto.req.MqConsumerPullReq;
 import com.github.houbb.mq.common.dto.req.MqMessage;
 import com.github.houbb.mq.common.dto.resp.MqCommonResp;
@@ -76,9 +78,47 @@ public class LocalMqBrokerPersist implements IMqBrokerPersist {
     }
 
     @Override
-    public MqConsumerPullResp pull(MqConsumerPullReq pull, Channel channel) {
-        //TODO... 待实现
-        return null;
+    public MqConsumerPullResp pull(MqConsumerPullReq pullReq, Channel channel) {
+        //1. 拉取匹配的信息
+        //2. 状态更新为代理中
+        //3. 如何更新对应的消费状态呢？
+
+        // 获取状态为 W 的订单
+        final int fetchSize = pullReq.getSize();
+        final String topic = pullReq.getTopicName();
+        final String tagRegex = pullReq.getTagRegex();
+
+        List<MqMessage> resultList = new ArrayList<>(fetchSize);
+        List<MqMessagePersistPut> putList = map.get(topic);
+        // 性能比较差
+        if(CollectionUtil.isNotEmpty(putList)) {
+            for(MqMessagePersistPut put : putList) {
+                final String status = put.getMessageStatus();
+                if(!MessageStatusConst.WAIT_CONSUMER.equals(status)) {
+                    continue;
+                }
+
+                final MqMessage mqMessage = put.getMqMessage();
+                List<String> tagList = mqMessage.getTags();
+                if(InnerRegexUtils.hasMatch(tagList, tagRegex)) {
+                    // 设置为处理中
+                    // TODO： 消息的最终状态什么时候更新呢？
+                    // 可以给 broker 一个 ACK
+                    put.setMessageStatus(MessageStatusConst.PROCESS_CONSUMER);
+                    resultList.add(mqMessage);
+                }
+
+                if(resultList.size() >= fetchSize) {
+                    break;
+                }
+            }
+        }
+
+        MqConsumerPullResp resp = new MqConsumerPullResp();
+        resp.setRespCode(MqCommonRespCode.SUCCESS.getCode());
+        resp.setRespMessage(MqCommonRespCode.SUCCESS.getMsg());
+        resp.setList(resultList);
+        return resp;
     }
 
 }

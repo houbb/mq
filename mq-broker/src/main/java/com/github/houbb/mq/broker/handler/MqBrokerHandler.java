@@ -9,10 +9,8 @@ import com.github.houbb.mq.broker.api.IBrokerConsumerService;
 import com.github.houbb.mq.broker.api.IBrokerProducerService;
 import com.github.houbb.mq.broker.constant.MessageStatusConst;
 import com.github.houbb.mq.broker.dto.BrokerRegisterReq;
-import com.github.houbb.mq.broker.dto.ServiceEntry;
 import com.github.houbb.mq.broker.dto.consumer.ConsumerSubscribeReq;
 import com.github.houbb.mq.broker.dto.consumer.ConsumerUnSubscribeReq;
-import com.github.houbb.mq.broker.dto.persist.MqMessagePersistPull;
 import com.github.houbb.mq.broker.dto.persist.MqMessagePersistPut;
 import com.github.houbb.mq.broker.support.persist.IMqBrokerPersist;
 import com.github.houbb.mq.broker.support.push.BrokerPushContext;
@@ -253,7 +251,7 @@ public class MqBrokerHandler extends SimpleChannelInboundHandler {
      * @since 0.0.3
      */
     private void asyncHandleMessage(MqMessage mqMessage) {
-        List<Channel> channelList = registerConsumerService.getSubscribeList(mqMessage);
+        List<Channel> channelList = registerConsumerService.getPushSubscribeList(mqMessage);
         if(CollectionUtil.isEmpty(channelList)) {
             log.info("监听列表为空，忽略处理");
             return;

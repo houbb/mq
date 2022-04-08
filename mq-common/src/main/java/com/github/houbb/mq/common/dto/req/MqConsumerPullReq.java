@@ -1,7 +1,5 @@
 package com.github.houbb.mq.common.dto.req;
 
-import java.util.List;
-
 /**
  * @author binbin.hou
  * @since 1.0.0
@@ -14,19 +12,35 @@ public class MqConsumerPullReq extends MqCommonReq {
     private String groupName;
 
     /**
-     * 标题名称
-     */
-    private String topic;
-
-    /**
-     * 标签
-     */
-    private List<String> tags;
-
-    /**
      * 拉取大小
      */
     private int size;
+
+    /**
+     * 标题名称
+     */
+    private String topicName;
+
+    /**
+     * 标签正则
+     */
+    private String tagRegex;
+
+    public String getTopicName() {
+        return topicName;
+    }
+
+    public void setTopicName(String topicName) {
+        this.topicName = topicName;
+    }
+
+    public String getTagRegex() {
+        return tagRegex;
+    }
+
+    public void setTagRegex(String tagRegex) {
+        this.tagRegex = tagRegex;
+    }
 
     public String getGroupName() {
         return groupName;
@@ -34,22 +48,6 @@ public class MqConsumerPullReq extends MqCommonReq {
 
     public void setGroupName(String groupName) {
         this.groupName = groupName;
-    }
-
-    public String getTopic() {
-        return topic;
-    }
-
-    public void setTopic(String topic) {
-        this.topic = topic;
-    }
-
-    public List<String> getTags() {
-        return tags;
-    }
-
-    public void setTags(List<String> tags) {
-        this.tags = tags;
     }
 
     public int getSize() {
@@ -63,9 +61,10 @@ public class MqConsumerPullReq extends MqCommonReq {
     @Override
     public String toString() {
         return "MqConsumerPullReq{" +
-                "topic='" + topic + '\'' +
-                ", tags=" + tags +
+                "groupName='" + groupName + '\'' +
                 ", size=" + size +
+                ", topicName='" + topicName + '\'' +
+                ", tagRegex='" + tagRegex + '\'' +
                 "} " + super.toString();
     }
 

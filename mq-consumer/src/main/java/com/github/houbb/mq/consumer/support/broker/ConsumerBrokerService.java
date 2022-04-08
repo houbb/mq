@@ -14,8 +14,10 @@ import com.github.houbb.mq.broker.dto.consumer.ConsumerUnSubscribeReq;
 import com.github.houbb.mq.broker.utils.InnerChannelUtils;
 import com.github.houbb.mq.common.constant.MethodType;
 import com.github.houbb.mq.common.dto.req.MqCommonReq;
+import com.github.houbb.mq.common.dto.req.MqConsumerPullReq;
 import com.github.houbb.mq.common.dto.req.MqHeartBeatReq;
 import com.github.houbb.mq.common.dto.resp.MqCommonResp;
+import com.github.houbb.mq.common.dto.resp.MqConsumerPullResp;
 import com.github.houbb.mq.common.resp.MqCommonRespCode;
 import com.github.houbb.mq.common.resp.MqException;
 import com.github.houbb.mq.common.rpc.RpcChannelFuture;
@@ -255,7 +257,7 @@ public class ConsumerBrokerService implements IConsumerBrokerService {
     }
 
     @Override
-    public void subscribe(String topicName, String tagRegex) {
+    public void subscribe(String topicName, String tagRegex, String consumerType) {
         final ConsumerSubscribeReq req = new ConsumerSubscribeReq();
 
         String messageId = IdHelper.uuid32();
@@ -264,6 +266,7 @@ public class ConsumerBrokerService implements IConsumerBrokerService {
         req.setTopicName(topicName);
         req.setTagRegex(tagRegex);
         req.setGroupName(groupName);
+        req.setConsumerType(consumerType);
 
         // 重试订阅
         Retryer.<String>newInstance()
@@ -282,7 +285,7 @@ public class ConsumerBrokerService implements IConsumerBrokerService {
     }
 
     @Override
-    public void unSubscribe(String topicName, String tagRegex) {
+    public void unSubscribe(String topicName, String tagRegex, String consumerType) {
         final ConsumerUnSubscribeReq req = new ConsumerUnSubscribeReq();
 
         String messageId = IdHelper.uuid32();
@@ -291,6 +294,7 @@ public class ConsumerBrokerService implements IConsumerBrokerService {
         req.setTopicName(topicName);
         req.setTagRegex(tagRegex);
         req.setGroupName(groupName);
+        req.setConsumerType(consumerType);
 
         // 重试取消订阅
         Retryer.<String>newInstance()
@@ -329,6 +333,22 @@ public class ConsumerBrokerService implements IConsumerBrokerService {
                 log.error("[HEARTBEAT] 往服务端处理异常", exception);
             }
         }
+    }
+
+    @Override
+    public MqConsumerPullResp pull(String topicName, String tagRegex, int fetchSize) {
+        MqConsumerPullReq req = new MqConsumerPullReq();
+        req.setSize(fetchSize);
+        req.setGroupName(groupName);
+        req.setTagRegex(tagRegex);
+        req.setTopicName(topicName);
+
+        final String traceId = IdHelper.uuid32();
+        req.setTraceId(traceId);
+        req.setMethodType(MethodType.C_MESSAGE_PULL);
+
+        Channel channel = getChannel(null);
+        return this.callServer(channel, req, MqConsumerPullResp.class);
     }
 
     @Override

@@ -7,9 +7,9 @@ package com.github.houbb.mq.common.resp;
  * @since 1.0.0
  */
 public enum ConsumerStatus {
-    SUCCESS("SUCCESS", "消费成功"),
-    FAILED("FAILED", "消费失败"),
-    CONSUMER_LATER("CONSUMER_LATER", "稍后消费"),
+    SUCCESS("S", "消费成功"),
+    FAILED("F", "消费失败"),
+    CONSUMER_LATER("W", "稍后消费"),
     ;
 
     private final String code;

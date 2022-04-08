@@ -79,14 +79,14 @@ public interface IBrokerConsumerService {
                    final Channel clientChannel);
 
     /**
-     * 获取所有匹配的消费者
+     * 获取所有匹配的消费者-主动推送
      * 1. 同一个 groupName 只返回一个，注意负载均衡
      * 2. 返回匹配当前消息的消费者通道
      *
      * @param mqMessage 消息体
      * @return 结果
      */
-    List<Channel> getSubscribeList(MqMessage mqMessage);
+    List<Channel> getPushSubscribeList(MqMessage mqMessage);
 
     /**
      * 心跳

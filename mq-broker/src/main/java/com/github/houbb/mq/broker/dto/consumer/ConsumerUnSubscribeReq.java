@@ -25,6 +25,20 @@ public class ConsumerUnSubscribeReq extends MqCommonReq {
      */
     private String tagRegex;
 
+    /**
+     * 消费者类型
+     * @since 0.0.9
+     */
+    private String consumerType;
+
+    public String getConsumerType() {
+        return consumerType;
+    }
+
+    public void setConsumerType(String consumerType) {
+        this.consumerType = consumerType;
+    }
+
     public String getGroupName() {
         return groupName;
     }

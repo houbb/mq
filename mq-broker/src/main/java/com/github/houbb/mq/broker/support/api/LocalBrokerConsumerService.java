@@ -2,7 +2,6 @@ package com.github.houbb.mq.broker.support.api;
 
 import com.alibaba.fastjson.JSON;
 import com.github.houbb.heaven.util.util.CollectionUtil;
-import com.github.houbb.heaven.util.util.regex.RegexUtil;
 import com.github.houbb.load.balance.api.ILoadBalance;
 import com.github.houbb.log.integration.core.Log;
 import com.github.houbb.log.integration.core.LogFactory;
@@ -13,6 +12,8 @@ import com.github.houbb.mq.broker.dto.consumer.ConsumerSubscribeBo;
 import com.github.houbb.mq.broker.dto.consumer.ConsumerSubscribeReq;
 import com.github.houbb.mq.broker.dto.consumer.ConsumerUnSubscribeReq;
 import com.github.houbb.mq.broker.utils.InnerChannelUtils;
+import com.github.houbb.mq.broker.utils.InnerRegexUtils;
+import com.github.houbb.mq.common.constant.ConsumerTypeConst;
 import com.github.houbb.mq.common.dto.req.MqHeartBeatReq;
 import com.github.houbb.mq.common.dto.req.MqMessage;
 import com.github.houbb.mq.common.dto.resp.MqCommonResp;
@@ -40,11 +41,11 @@ public class LocalBrokerConsumerService implements IBrokerConsumerService {
     private final Map<String, BrokerServiceEntryChannel> registerMap = new ConcurrentHashMap<>();
 
     /**
-     * 订阅集合
+     * 订阅集合-推送策略
      * key: topicName
      * value: 对应的订阅列表
      */
-    private final Map<String, Set<ConsumerSubscribeBo>> subscribeMap = new ConcurrentHashMap<>();
+    private final Map<String, Set<ConsumerSubscribeBo>> pushSubscribeMap = new ConcurrentHashMap<>();
 
     /**
      * 心跳 map
@@ -132,6 +133,8 @@ public class LocalBrokerConsumerService implements IBrokerConsumerService {
         final String channelId = ChannelUtil.getChannelId(clientChannel);
         final String topicName = serviceEntry.getTopicName();
 
+        final String consumerType = serviceEntry.getConsumerType();
+        Map<String, Set<ConsumerSubscribeBo>> subscribeMap = getSubscribeMapByConsumerType(consumerType);
         Set<ConsumerSubscribeBo> set = subscribeMap.get(topicName);
         if(set == null) {
             set = new HashSet<>();
@@ -151,10 +154,16 @@ public class LocalBrokerConsumerService implements IBrokerConsumerService {
         return resp;
     }
 
+    private Map<String, Set<ConsumerSubscribeBo>> getSubscribeMapByConsumerType(String consumerType) {
+        return pushSubscribeMap;
+    }
+
     @Override
     public MqCommonResp unSubscribe(ConsumerUnSubscribeReq serviceEntry, Channel clientChannel) {
         final String channelId = ChannelUtil.getChannelId(clientChannel);
         final String topicName = serviceEntry.getTopicName();
+        final String consumerType = serviceEntry.getConsumerType();
+        Map<String, Set<ConsumerSubscribeBo>> subscribeMap = getSubscribeMapByConsumerType(consumerType);
 
         ConsumerSubscribeBo subscribeBo = new ConsumerSubscribeBo();
         subscribeBo.setChannelId(channelId);
@@ -175,9 +184,9 @@ public class LocalBrokerConsumerService implements IBrokerConsumerService {
     }
 
     @Override
-    public List<Channel> getSubscribeList(MqMessage mqMessage) {
+    public List<Channel> getPushSubscribeList(MqMessage mqMessage) {
         final String topicName = mqMessage.getTopic();
-        Set<ConsumerSubscribeBo> set = subscribeMap.get(topicName);
+        Set<ConsumerSubscribeBo> set = pushSubscribeMap.get(topicName);
         if(CollectionUtil.isEmpty(set)) {
             return Collections.emptyList();
         }
@@ -189,8 +198,8 @@ public class LocalBrokerConsumerService implements IBrokerConsumerService {
         for(ConsumerSubscribeBo bo : set) {
             String tagRegex = bo.getTagRegex();
 
-            if(hasMatch(tagNameList, tagRegex)) {
-                //TODO: 这种设置模式，统一添加处理 haven
+            if(InnerRegexUtils.hasMatch(tagNameList, tagRegex)) {
+                //TODO: 这种设置模式，统一添加处理 heaven
                 String groupName = bo.getGroupName();
                 List<ConsumerSubscribeBo> list = groupMap.get(groupName);
                 if(list == null) {
@@ -236,23 +245,6 @@ public class LocalBrokerConsumerService implements IBrokerConsumerService {
         entryChannel.setLastAccessTime(mqHeartBeatReq.getTime());
 
         heartbeatMap.put(channelId, entryChannel);
-    }
-
-    private boolean hasMatch(List<String> tagNameList,
-                             String tagRegex) {
-        if(CollectionUtil.isEmpty(tagNameList)) {
-            return false;
-        }
-
-        Pattern pattern = Pattern.compile(tagRegex);
-
-        for(String tagName : tagNameList) {
-            if(RegexUtils.match(pattern, tagName)) {
-                return true;
-            }
-        }
-
-        return false;
     }
 
 }
