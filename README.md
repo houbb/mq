@@ -1,6 +1,6 @@
 # mq
 
-[mq](https://github.com/houbb/mq) 是基于 netty 实现的 java mq 框架，类似于 dubbo。
+[mq](https://github.com/houbb/mq) 是基于 netty 实现的 java mq 框架，类似于 rocket mq。
 
 [![Build Status](https://travis-ci.com/houbb/mq.svg?branch=master)](https://travis-ci.com/houbb/mq)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.github.houbb/mq/badge.svg)](http://mvnrepository.com/artifact/com.github.houbb/mq)
@@ -33,19 +33,21 @@
 
 # 快速入门
 
-## maven 引入
+## 测试
+
+### 注册中心
+
+依赖 maven 包：
 
 ```xml
 <dependency>
     <groupId>com.github.houbb</groupId>
-    <artifactId>mq-all</artifactId>
+    <artifactId>mq-broker</artifactId>
     <version>${mq.version}</version>
 </dependency>
 ```
 
-## 测试
-
-### 注册中心
+代码实现：
 
 ```java
 MqBroker broker = new MqBroker();
@@ -53,6 +55,19 @@ broker.start();
 ```
 
 ### 消费者
+
+依赖 maven 包：
+
+```xml
+<dependency>
+    <groupId>com.github.houbb</groupId>
+    <artifactId>mq-consumer</artifactId>
+    <version>${mq.version}</version>
+</dependency>
+```
+
+代码实现：
+
 
 ```java
 final MqConsumerPush mqConsumerPush = new MqConsumerPush();
@@ -69,6 +84,18 @@ mqConsumerPush.registerListener(new IMqConsumerListener() {
 ```
 
 ### 生产者
+
+依赖 maven 包：
+
+```xml
+<dependency>
+    <groupId>com.github.houbb</groupId>
+    <artifactId>mq-producer</artifactId>
+    <version>${mq.version}</version>
+</dependency>
+```
+
+代码实现：
 
 ```java
 MqProducer mqProducer = new MqProducer();
