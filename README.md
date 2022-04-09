@@ -43,7 +43,7 @@
 <dependency>
     <groupId>com.github.houbb</groupId>
     <artifactId>mq-broker</artifactId>
-    <version>${mq.version}</version>
+    <version>0.1.0</version>
 </dependency>
 ```
 
@@ -62,7 +62,7 @@ broker.start();
 <dependency>
     <groupId>com.github.houbb</groupId>
     <artifactId>mq-consumer</artifactId>
-    <version>${mq.version}</version>
+    <version>0.1.0</version>
 </dependency>
 ```
 
@@ -91,7 +91,7 @@ mqConsumerPush.registerListener(new IMqConsumerListener() {
 <dependency>
     <groupId>com.github.houbb</groupId>
     <artifactId>mq-producer</artifactId>
-    <version>${mq.version}</version>
+    <version>0.1.0</version>
 </dependency>
 ```
 
