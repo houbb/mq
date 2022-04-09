@@ -6,7 +6,9 @@ import com.github.houbb.log.integration.core.Log;
 import com.github.houbb.log.integration.core.LogFactory;
 import com.github.houbb.mq.common.constant.ConsumerTypeConst;
 import com.github.houbb.mq.common.dto.req.MqMessage;
+import com.github.houbb.mq.common.dto.resp.MqCommonResp;
 import com.github.houbb.mq.common.dto.resp.MqConsumerPullResp;
+import com.github.houbb.mq.common.resp.ConsumerStatus;
 import com.github.houbb.mq.common.resp.MqCommonRespCode;
 import com.github.houbb.mq.consumer.api.IMqConsumerListenerContext;
 import com.github.houbb.mq.consumer.dto.MqTopicTagDto;
@@ -100,8 +102,13 @@ public class MqConsumerPull extends MqConsumerPush  {
                         if(CollectionUtil.isNotEmpty(mqMessageList)) {
                             for(MqMessage mqMessage : mqMessageList) {
                                 IMqConsumerListenerContext context = new MqConsumerListenerContext();
+                                final String messageId = mqMessage.getTraceId();
+                                ConsumerStatus consumerStatus = mqListenerService.consumer(mqMessage, context);
+                                log.info("消息：{} 消费结果 {}", messageId, consumerStatus);
 
-                                mqListenerService.consumer(mqMessage, context);
+                                // 状态同步更新
+                                MqCommonResp ackResp = consumerBrokerService.consumerStatusAck(messageId, consumerStatus);
+                                log.info("消息：{} 状态回执结果 {}", messageId, JSON.toJSON(ackResp));
                             }
                         }
                     } else {
@@ -137,6 +144,10 @@ public class MqConsumerPull extends MqConsumerPush  {
         MqTopicTagDto dto = new MqTopicTagDto();
         dto.setTagRegex(tagRegex);
         dto.setTopicName(topicName);
+        // 主动拉取这里会有问题，会导致不同的 groupName 的消息，实际上已经被消费了
+        // 所有实际上应该有一个消息+group 的映射关系表，单个消息可以被多次重复消费。
+        // groupName+messageId+status==>在数据库层面实现
+        dto.setGroupName(groupName);
         return dto;
     }
 

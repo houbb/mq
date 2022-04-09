@@ -1,7 +1,5 @@
 package com.github.houbb.mq.broker.support.push;
 
-import com.github.houbb.mq.common.dto.req.MqMessage;
-
 /**
  * 消息推送服务
  *

@@ -7,7 +7,6 @@ import com.github.houbb.log.integration.core.Log;
 import com.github.houbb.log.integration.core.LogFactory;
 import com.github.houbb.mq.broker.api.IBrokerConsumerService;
 import com.github.houbb.mq.broker.api.IBrokerProducerService;
-import com.github.houbb.mq.broker.constant.MessageStatusConst;
 import com.github.houbb.mq.broker.dto.BrokerRegisterReq;
 import com.github.houbb.mq.broker.dto.consumer.ConsumerSubscribeReq;
 import com.github.houbb.mq.broker.dto.consumer.ConsumerUnSubscribeReq;
@@ -15,8 +14,10 @@ import com.github.houbb.mq.broker.dto.persist.MqMessagePersistPut;
 import com.github.houbb.mq.broker.support.persist.IMqBrokerPersist;
 import com.github.houbb.mq.broker.support.push.BrokerPushContext;
 import com.github.houbb.mq.broker.support.push.IBrokerPushService;
+import com.github.houbb.mq.common.constant.MessageStatusConst;
 import com.github.houbb.mq.common.constant.MethodType;
 import com.github.houbb.mq.common.dto.req.MqConsumerPullReq;
+import com.github.houbb.mq.common.dto.req.MqConsumerUpdateStatusReq;
 import com.github.houbb.mq.common.dto.req.MqHeartBeatReq;
 import com.github.houbb.mq.common.dto.req.MqMessage;
 import com.github.houbb.mq.common.dto.resp.MqCommonResp;
@@ -189,7 +190,7 @@ public class MqBrokerHandler extends SimpleChannelInboundHandler {
                 persistPut.setMqMessage(mqMessage);
                 persistPut.setMessageStatus(MessageStatusConst.WAIT_CONSUMER);
                 MqCommonResp commonResp = mqBrokerPersist.put(persistPut);
-                this.asyncHandleMessage(mqMessage);
+                this.asyncHandleMessage(persistPut);
                 return commonResp;
             }
             // 生产者消息发送-ONE WAY
@@ -199,7 +200,7 @@ public class MqBrokerHandler extends SimpleChannelInboundHandler {
                 persistPut.setMqMessage(mqMessage);
                 persistPut.setMessageStatus(MessageStatusConst.WAIT_CONSUMER);
                 mqBrokerPersist.put(persistPut);
-                this.asyncHandleMessage(mqMessage);
+                this.asyncHandleMessage(persistPut);
                 return null;
             }
 
@@ -234,6 +235,13 @@ public class MqBrokerHandler extends SimpleChannelInboundHandler {
                 registerConsumerService.heartbeat(req, channel);
                 return null;
             }
+            // 消费者消费状态 ACK
+            if(MethodType.C_CONSUMER_STATUS.equals(methodType)) {
+                MqConsumerUpdateStatusReq req = JSON.parseObject(json, MqConsumerUpdateStatusReq.class);
+                final String messageId = req.getMessageId();
+                final String messageStatus = req.getMessageStatus();
+                return mqBrokerPersist.updateStatus(messageId, messageStatus);
+            }
 
             throw new UnsupportedOperationException("暂不支持的方法类型");
         } catch (Exception exception) {
@@ -247,10 +255,11 @@ public class MqBrokerHandler extends SimpleChannelInboundHandler {
 
     /**
      * 异步处理消息
-     * @param mqMessage 消息
+     * @param put 消息
      * @since 0.0.3
      */
-    private void asyncHandleMessage(MqMessage mqMessage) {
+    private void asyncHandleMessage(MqMessagePersistPut put) {
+        final MqMessage mqMessage = put.getMqMessage();
         List<Channel> channelList = registerConsumerService.getPushSubscribeList(mqMessage);
         if(CollectionUtil.isEmpty(channelList)) {
             log.info("监听列表为空，忽略处理");
@@ -259,7 +268,7 @@ public class MqBrokerHandler extends SimpleChannelInboundHandler {
 
         BrokerPushContext brokerPushContext = BrokerPushContext.newInstance()
                 .channelList(channelList)
-                .mqMessage(mqMessage)
+                .mqMessagePersistPut(put)
                 .mqBrokerPersist(mqBrokerPersist)
                 .invokeService(invokeService)
                 .respTimeoutMills(respTimeoutMills)

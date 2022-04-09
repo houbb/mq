@@ -67,6 +67,12 @@ public class MethodType {
     public static final String C_HEARTBEAT = "C_HEARTBEAT";
 
     /**
+     * 消费者消费状态
+     * @since 0.1.0
+     */
+    public static final String C_CONSUMER_STATUS = "C_CONSUMER_STATUS";
+
+    /**
      * 中间人消息推送
      * @since 0.0.3
      */

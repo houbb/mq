@@ -4,9 +4,9 @@ import com.alibaba.fastjson.JSON;
 import com.github.houbb.heaven.util.util.CollectionUtil;
 import com.github.houbb.log.integration.core.Log;
 import com.github.houbb.log.integration.core.LogFactory;
-import com.github.houbb.mq.broker.constant.MessageStatusConst;
 import com.github.houbb.mq.broker.dto.persist.MqMessagePersistPut;
 import com.github.houbb.mq.broker.utils.InnerRegexUtils;
+import com.github.houbb.mq.common.constant.MessageStatusConst;
 import com.github.houbb.mq.common.dto.req.MqConsumerPullReq;
 import com.github.houbb.mq.common.dto.req.MqMessage;
 import com.github.houbb.mq.common.dto.resp.MqCommonResp;
@@ -15,6 +15,7 @@ import com.github.houbb.mq.common.resp.MqCommonRespCode;
 import io.netty.channel.Channel;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -93,8 +94,7 @@ public class LocalMqBrokerPersist implements IMqBrokerPersist {
         // 性能比较差
         if(CollectionUtil.isNotEmpty(putList)) {
             for(MqMessagePersistPut put : putList) {
-                final String status = put.getMessageStatus();
-                if(!MessageStatusConst.WAIT_CONSUMER.equals(status)) {
+                if(!isEnableStatus(put)) {
                     continue;
                 }
 
@@ -104,7 +104,7 @@ public class LocalMqBrokerPersist implements IMqBrokerPersist {
                     // 设置为处理中
                     // TODO： 消息的最终状态什么时候更新呢？
                     // 可以给 broker 一个 ACK
-                    put.setMessageStatus(MessageStatusConst.PROCESS_CONSUMER);
+                    put.setMessageStatus(MessageStatusConst.TO_CONSUMER_PROCESS);
                     resultList.add(mqMessage);
                 }
 
@@ -119,6 +119,15 @@ public class LocalMqBrokerPersist implements IMqBrokerPersist {
         resp.setRespMessage(MqCommonRespCode.SUCCESS.getMsg());
         resp.setList(resultList);
         return resp;
+    }
+
+    private boolean isEnableStatus(final MqMessagePersistPut persistPut) {
+        final String status = persistPut.getMessageStatus();
+        // 数据库可以设计一个字段，比如待消费时间，进行排序。
+        // 这里只是简化实现，仅用于测试。
+        List<String> statusList = Arrays.asList(MessageStatusConst.WAIT_CONSUMER,
+                MessageStatusConst.CONSUMER_LATER);
+        return statusList.contains(status);
     }
 
 }

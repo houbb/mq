@@ -9,6 +9,11 @@ import java.util.Objects;
 public class MqTopicTagDto {
 
     /**
+     * 消费者分组名称
+     */
+    private String groupName;
+
+    /**
      * 标题名称
      */
     private String topicName;
@@ -34,17 +39,26 @@ public class MqTopicTagDto {
         this.tagRegex = tagRegex;
     }
 
+    public String getGroupName() {
+        return groupName;
+    }
+
+    public void setGroupName(String groupName) {
+        this.groupName = groupName;
+    }
+
     @Override
     public boolean equals(Object object) {
         if (this == object) return true;
         if (object == null || getClass() != object.getClass()) return false;
-        MqTopicTagDto dto = (MqTopicTagDto) object;
-        return Objects.equals(topicName, dto.topicName) &&
-                Objects.equals(tagRegex, dto.tagRegex);
+        MqTopicTagDto tagDto = (MqTopicTagDto) object;
+        return Objects.equals(groupName, tagDto.groupName) &&
+                Objects.equals(topicName, tagDto.topicName) &&
+                Objects.equals(tagRegex, tagDto.tagRegex);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(topicName, tagRegex);
+        return Objects.hash(groupName, topicName, tagRegex);
     }
 }

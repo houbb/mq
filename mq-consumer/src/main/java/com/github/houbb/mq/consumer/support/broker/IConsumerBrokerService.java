@@ -4,6 +4,7 @@ import com.github.houbb.mq.common.api.Destroyable;
 import com.github.houbb.mq.common.dto.req.MqCommonReq;
 import com.github.houbb.mq.common.dto.resp.MqCommonResp;
 import com.github.houbb.mq.common.dto.resp.MqConsumerPullResp;
+import com.github.houbb.mq.common.resp.ConsumerStatus;
 import io.netty.channel.Channel;
 
 /**
@@ -79,5 +80,15 @@ public interface IConsumerBrokerService extends Destroyable {
     MqConsumerPullResp pull(String topicName,
                             String tagRegex,
                             int fetchSize);
+
+    /**
+     * 消费状态回执
+     * @param messageId 消息唯一标识
+     * @param consumerStatus 消费状态
+     * @return 结果
+     * @since 0.1.0
+     */
+    MqCommonResp consumerStatusAck(String messageId,
+                             ConsumerStatus consumerStatus);
 
 }

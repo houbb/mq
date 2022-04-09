@@ -166,13 +166,17 @@ System.out.println(JSON.toJSON(sendResult));
 
 - [x] 消费者 pull 策略实现
 
-- [ ] pull 消息消费的 ACK 处理
+- [x] pull 消息消费的 ACK 处理
 
 - [ ] offline message 离线消息
 
 - [ ] dead message 死信队列
 
 - [ ] broker springboot 实现
+
+- [ ] 消息的 ack 处理，要基于 groupName 进行处理
+
+messageId groupName status，和原始消息表分开
 
 - [ ] 顺序消息
 

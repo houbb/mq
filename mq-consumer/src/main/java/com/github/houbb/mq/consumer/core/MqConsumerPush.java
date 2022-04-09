@@ -105,6 +105,17 @@ public class MqConsumerPush extends Thread implements IMqConsumer  {
      */
     protected int unSubscribeMaxAttempt = 3;
 
+    /**
+     * 消费状态更新最大尝试次数
+     * @since 0.1.0
+     */
+    private int consumerStatusMaxAttempt = 3;
+
+    public MqConsumerPush consumerStatusMaxAttempt(int consumerStatusMaxAttempt) {
+        this.consumerStatusMaxAttempt = consumerStatusMaxAttempt;
+        return this;
+    }
+
     public MqConsumerPush subscribeMaxAttempt(int subscribeMaxAttempt) {
         this.subscribeMaxAttempt = subscribeMaxAttempt;
         return this;
@@ -174,7 +185,8 @@ public class MqConsumerPush extends Thread implements IMqConsumer  {
                     .mqListenerService(mqListenerService)
                     .loadBalance(loadBalance)
                     .subscribeMaxAttempt(subscribeMaxAttempt)
-                    .unSubscribeMaxAttempt(unSubscribeMaxAttempt);
+                    .unSubscribeMaxAttempt(unSubscribeMaxAttempt)
+                    .consumerStatusMaxAttempt(consumerStatusMaxAttempt);
 
             //1. 初始化
             this.consumerBrokerService.initChannelFutureList(config);

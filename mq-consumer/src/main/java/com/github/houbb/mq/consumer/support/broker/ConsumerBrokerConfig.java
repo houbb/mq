@@ -70,6 +70,21 @@ public class ConsumerBrokerConfig {
      */
     private int unSubscribeMaxAttempt = 3;
 
+    /**
+     * 消费状态更新最大尝试次数
+     * @since 0.1.0
+     */
+    private int consumerStatusMaxAttempt = 3;
+
+    public int consumerStatusMaxAttempt() {
+        return consumerStatusMaxAttempt;
+    }
+
+    public ConsumerBrokerConfig consumerStatusMaxAttempt(int consumerStatusMaxAttempt) {
+        this.consumerStatusMaxAttempt = consumerStatusMaxAttempt;
+        return this;
+    }
+
     public static ConsumerBrokerConfig newInstance() {
         return new ConsumerBrokerConfig();
     }

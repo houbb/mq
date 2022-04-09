@@ -4,7 +4,9 @@ import com.alibaba.fastjson.JSON;
 import com.github.houbb.log.integration.core.Log;
 import com.github.houbb.log.integration.core.LogFactory;
 import com.github.houbb.mq.broker.constant.BrokerRespCode;
+import com.github.houbb.mq.broker.dto.persist.MqMessagePersistPut;
 import com.github.houbb.mq.broker.support.persist.IMqBrokerPersist;
+import com.github.houbb.mq.common.constant.MessageStatusConst;
 import com.github.houbb.mq.common.constant.MethodType;
 import com.github.houbb.mq.common.dto.req.MqCommonReq;
 import com.github.houbb.mq.common.dto.req.MqMessage;
@@ -42,13 +44,18 @@ public class BrokerPushService implements IBrokerPushService {
             @Override
             public void run() {
                 log.info("开始异步处理 {}", JSON.toJSON(context));
+                final MqMessagePersistPut persistPut = context.mqMessagePersistPut();
+                final MqMessage mqMessage = persistPut.getMqMessage();
                 final List<Channel> channelList = context.channelList();
                 final IMqBrokerPersist mqBrokerPersist = context.mqBrokerPersist();
-                final MqMessage mqMessage = context.mqMessage();
-                final String messageId = mqMessage.getTraceId();
                 final IInvokeService invokeService = context.invokeService();
                 final long responseTime = context.respTimeoutMills();
                 final int pushMaxAttempt = context.pushMaxAttempt();
+
+                // 更新状态为处理中
+                final String messageId = mqMessage.getTraceId();
+                log.info("开始更新消息为处理中：{}", messageId);
+                mqBrokerPersist.updateStatus(messageId, MessageStatusConst.TO_CONSUMER_PROCESS);
 
                 for(final Channel channel : channelList) {
                     try {
@@ -78,14 +85,18 @@ public class BrokerPushService implements IBrokerPushService {
                                 }).retryCall();
 
                         //2. 更新状态
-                        mqBrokerPersist.updateStatus(messageId, resultResp.getConsumerStatus());
-
-                        //3. 后期添加重试策略
-
+                        //2.1 处理成功，取 push 消费状态
+                        if(MqCommonRespCode.SUCCESS.getCode().equals(resultResp.getRespCode())) {
+                            mqBrokerPersist.updateStatus(messageId, resultResp.getConsumerStatus());
+                        } else {
+                            // 2.2 处理失败
+                            log.error("消费失败：{}", JSON.toJSON(resultResp));
+                            mqBrokerPersist.updateStatus(messageId, MessageStatusConst.TO_CONSUMER_FAILED);
+                        }
                         log.info("完成处理 channelId: {}", channelId);
                     } catch (Exception exception) {
                         log.error("处理异常");
-                        mqBrokerPersist.updateStatus(messageId, ConsumerStatus.FAILED.getCode());
+                        mqBrokerPersist.updateStatus(messageId, MessageStatusConst.TO_CONSUMER_FAILED);
                     }
                 }
 
