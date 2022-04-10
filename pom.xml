@@ -33,7 +33,7 @@
         <project.compiler.level>1.7</project.compiler.level>
 
         <!--============================== INTER ==============================-->
-        <heaven.version>0.1.160</heaven.version>
+        <heaven.version>0.1.161</heaven.version>
         <log-integration.version>1.1.8</log-integration.version>
         <json.version>0.1.1</json.version>
         <load-balance.version>0.0.5</load-balance.version>

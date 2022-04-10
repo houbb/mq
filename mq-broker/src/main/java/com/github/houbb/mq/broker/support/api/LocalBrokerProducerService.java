@@ -60,8 +60,7 @@ public class LocalBrokerProducerService implements IBrokerProducerService {
     }
 
     @Override
-    public ServiceEntry getServiceEntry(Channel channel) {
-        final String channelId = ChannelUtil.getChannelId(channel);
+    public ServiceEntry getServiceEntry(String channelId) {
         return registerMap.get(channelId);
     }
 

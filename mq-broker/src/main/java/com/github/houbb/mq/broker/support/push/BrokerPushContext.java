@@ -1,5 +1,6 @@
 package com.github.houbb.mq.broker.support.push;
 
+import com.github.houbb.mq.broker.dto.ChannelGroupNameDto;
 import com.github.houbb.mq.broker.dto.persist.MqMessagePersistPut;
 import com.github.houbb.mq.broker.support.persist.IMqBrokerPersist;
 import com.github.houbb.mq.common.dto.req.MqMessage;
@@ -7,6 +8,7 @@ import com.github.houbb.mq.common.support.invoke.IInvokeService;
 import io.netty.channel.Channel;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author binbin.hou
@@ -18,7 +20,7 @@ public class BrokerPushContext {
 
     private MqMessagePersistPut mqMessagePersistPut;
 
-    private List<Channel> channelList;
+    private List<ChannelGroupNameDto> channelList;
 
     private IInvokeService invokeService;
 
@@ -33,6 +35,12 @@ public class BrokerPushContext {
      * @since 0.0.8
      */
     private int pushMaxAttempt;
+
+    /**
+     * channel 标识和 groupName map
+     * @since 0.1.1
+     */
+    private Map<String, String> channelGroupMap;
 
     public static BrokerPushContext newInstance() {
         return new BrokerPushContext();
@@ -56,11 +64,11 @@ public class BrokerPushContext {
         return this;
     }
 
-    public List<Channel> channelList() {
+    public List<ChannelGroupNameDto> channelList() {
         return channelList;
     }
 
-    public BrokerPushContext channelList(List<Channel> channelList) {
+    public BrokerPushContext channelList(List<ChannelGroupNameDto> channelList) {
         this.channelList = channelList;
         return this;
     }
@@ -89,6 +97,15 @@ public class BrokerPushContext {
 
     public BrokerPushContext pushMaxAttempt(int pushMaxAttempt) {
         this.pushMaxAttempt = pushMaxAttempt;
+        return this;
+    }
+
+    public Map<String, String> channelGroupMap() {
+        return channelGroupMap;
+    }
+
+    public BrokerPushContext channelGroupMap(Map<String, String> channelGroupMap) {
+        this.channelGroupMap = channelGroupMap;
         return this;
     }
 }

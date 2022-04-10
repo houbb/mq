@@ -22,11 +22,13 @@ public interface IMqBrokerPersist {
     /**
      * 更新状态
      * @param messageId 消息唯一标识
+     * @param consumerGroupName 消费者分组名称
      * @param status 状态
      * @return 结果
      * @since 0.0.3
      */
     MqCommonResp updateStatus(final String messageId,
+                              final String consumerGroupName,
                               final String status);
 
     /**

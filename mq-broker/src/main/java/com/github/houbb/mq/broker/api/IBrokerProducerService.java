@@ -41,10 +41,10 @@ public interface IBrokerProducerService {
 
     /**
      * 获取服务地址信息
-     * @param channel channel
+     * @param channelId channel
      * @return 结果
      * @since 0.0.3
      */
-    ServiceEntry getServiceEntry(final Channel channel);
+    ServiceEntry getServiceEntry(final String channelId);
 
 }

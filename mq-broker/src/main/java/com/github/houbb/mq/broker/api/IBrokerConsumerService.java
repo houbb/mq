@@ -7,6 +7,7 @@ package com.github.houbb.mq.broker.api;
 
 
 import com.github.houbb.load.balance.api.ILoadBalance;
+import com.github.houbb.mq.broker.dto.ChannelGroupNameDto;
 import com.github.houbb.mq.broker.dto.ServiceEntry;
 import com.github.houbb.mq.broker.dto.consumer.ConsumerSubscribeBo;
 import com.github.houbb.mq.broker.dto.consumer.ConsumerSubscribeReq;
@@ -17,6 +18,7 @@ import com.github.houbb.mq.common.dto.resp.MqCommonResp;
 import io.netty.channel.Channel;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * <p> 消费者注册服务类 </p>
@@ -86,7 +88,7 @@ public interface IBrokerConsumerService {
      * @param mqMessage 消息体
      * @return 结果
      */
-    List<Channel> getPushSubscribeList(MqMessage mqMessage);
+    List<ChannelGroupNameDto> getPushSubscribeList(MqMessage mqMessage);
 
     /**
      * 心跳

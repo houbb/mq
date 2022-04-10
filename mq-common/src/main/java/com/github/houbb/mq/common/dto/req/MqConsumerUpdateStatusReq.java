@@ -16,6 +16,11 @@ public class MqConsumerUpdateStatusReq extends MqCommonReq {
      */
     private String messageStatus;
 
+    /**
+     * 消费者分组名称
+     */
+    private String consumerGroupName;
+
     public String getMessageId() {
         return messageId;
     }
@@ -32,11 +37,20 @@ public class MqConsumerUpdateStatusReq extends MqCommonReq {
         this.messageStatus = messageStatus;
     }
 
+    public String getConsumerGroupName() {
+        return consumerGroupName;
+    }
+
+    public void setConsumerGroupName(String consumerGroupName) {
+        this.consumerGroupName = consumerGroupName;
+    }
+
     @Override
     public String toString() {
         return "MqConsumerUpdateStatusReq{" +
                 "messageId='" + messageId + '\'' +
                 ", messageStatus='" + messageStatus + '\'' +
+                ", consumerGroupName='" + consumerGroupName + '\'' +
                 "} " + super.toString();
     }
 

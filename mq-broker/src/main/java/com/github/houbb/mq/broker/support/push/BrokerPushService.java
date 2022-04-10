@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.github.houbb.log.integration.core.Log;
 import com.github.houbb.log.integration.core.LogFactory;
 import com.github.houbb.mq.broker.constant.BrokerRespCode;
+import com.github.houbb.mq.broker.dto.ChannelGroupNameDto;
 import com.github.houbb.mq.broker.dto.persist.MqMessagePersistPut;
 import com.github.houbb.mq.broker.support.persist.IMqBrokerPersist;
 import com.github.houbb.mq.common.constant.MessageStatusConst;
@@ -46,7 +47,7 @@ public class BrokerPushService implements IBrokerPushService {
                 log.info("开始异步处理 {}", JSON.toJSON(context));
                 final MqMessagePersistPut persistPut = context.mqMessagePersistPut();
                 final MqMessage mqMessage = persistPut.getMqMessage();
-                final List<Channel> channelList = context.channelList();
+                final List<ChannelGroupNameDto> channelList = context.channelList();
                 final IMqBrokerPersist mqBrokerPersist = context.mqBrokerPersist();
                 final IInvokeService invokeService = context.invokeService();
                 final long responseTime = context.respTimeoutMills();
@@ -55,10 +56,15 @@ public class BrokerPushService implements IBrokerPushService {
                 // 更新状态为处理中
                 final String messageId = mqMessage.getTraceId();
                 log.info("开始更新消息为处理中：{}", messageId);
-                mqBrokerPersist.updateStatus(messageId, MessageStatusConst.TO_CONSUMER_PROCESS);
 
-                for(final Channel channel : channelList) {
+
+                for(final ChannelGroupNameDto channelGroupNameDto : channelList) {
+                    final Channel channel = channelGroupNameDto.getChannel();
+                    final String consumerGroupName =channelGroupNameDto.getConsumerGroupName();
+
                     try {
+                        mqBrokerPersist.updateStatus(messageId, consumerGroupName, MessageStatusConst.TO_CONSUMER_PROCESS);
+
                         String channelId = ChannelUtil.getChannelId(channel);
 
                         log.info("开始处理 channelId: {}", channelId);
@@ -87,16 +93,16 @@ public class BrokerPushService implements IBrokerPushService {
                         //2. 更新状态
                         //2.1 处理成功，取 push 消费状态
                         if(MqCommonRespCode.SUCCESS.getCode().equals(resultResp.getRespCode())) {
-                            mqBrokerPersist.updateStatus(messageId, resultResp.getConsumerStatus());
+                            mqBrokerPersist.updateStatus(messageId, consumerGroupName, resultResp.getConsumerStatus());
                         } else {
                             // 2.2 处理失败
                             log.error("消费失败：{}", JSON.toJSON(resultResp));
-                            mqBrokerPersist.updateStatus(messageId, MessageStatusConst.TO_CONSUMER_FAILED);
+                            mqBrokerPersist.updateStatus(messageId, consumerGroupName, MessageStatusConst.TO_CONSUMER_FAILED);
                         }
                         log.info("完成处理 channelId: {}", channelId);
                     } catch (Exception exception) {
                         log.error("处理异常");
-                        mqBrokerPersist.updateStatus(messageId, MessageStatusConst.TO_CONSUMER_FAILED);
+                        mqBrokerPersist.updateStatus(messageId, consumerGroupName, MessageStatusConst.TO_CONSUMER_FAILED);
                     }
                 }
 
