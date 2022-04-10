@@ -7,7 +7,7 @@
     <groupId>com.github.houbb</groupId>
     <artifactId>mq</artifactId>
     <packaging>pom</packaging>
-    <version>0.1.0</version>
+    <version>0.1.1</version>
     <modules>
         <module>mq-common</module>
         <module>mq-producer</module>
