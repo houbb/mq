@@ -19,6 +19,7 @@ public interface IMqBrokerPersist {
     /**
      * 保存消息
      * @param mqMessage 消息
+     * @return 响应
      * @since 0.0.3
      */
     MqCommonResp put(final MqMessagePersistPut mqMessage);
@@ -26,6 +27,7 @@ public interface IMqBrokerPersist {
     /**
      * 保存消息-批量
      * @param putList 消息
+     * @return 响应
      * @since 0.1.3
      */
     MqCommonResp putBatch(final List<MqMessagePersistPut> putList);
@@ -53,6 +55,7 @@ public interface IMqBrokerPersist {
     /**
      * 拉取消息
      * @param pull 拉取消息
+     * @param channel 通道
      * @return 结果
      */
     MqConsumerPullResp pull(final MqConsumerPullReq pull, final Channel channel);
