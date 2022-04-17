@@ -19,16 +19,21 @@ public class ProducerMain {
         MqProducer mqProducer = new MqProducer();
         mqProducer.start();
 
-        String message = "HELLO MQ!";
+        for(int i = 0; i < 20; i++) {
+            MqMessage mqMessage = buildMessage(i);
+            SendResult sendResult = mqProducer.send(mqMessage);
+            System.out.println(JSON.toJSON(sendResult));
+        }
+    }
+
+    private static MqMessage buildMessage(int i) {
+        String message = "HELLO MQ!" + i;
         MqMessage mqMessage = new MqMessage();
         mqMessage.setTopic("TOPIC");
         mqMessage.setTags(Arrays.asList("TAGA", "TAGB"));
         mqMessage.setPayload(message);
 
-        for(int i = 0; i < 3; i++) {
-            SendResult sendResult = mqProducer.send(mqMessage);
-            System.out.println(JSON.toJSON(sendResult));
-        }
+        return mqMessage;
     }
 
 }
