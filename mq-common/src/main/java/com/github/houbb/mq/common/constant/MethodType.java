@@ -15,7 +15,7 @@ public class MethodType {
      * 生产者发送消息
      * @since 0.0.3
      */
-    public static final String P_SEND_MSG_ONE_WAY = "P_SEND_MESSAGE_ONE_WAY";
+    public static final String P_SEND_MSG_ONE_WAY = "P_SEND_MSG_ONE_WAY";
 
     /**
      * 生产者注册
@@ -77,5 +77,23 @@ public class MethodType {
      * @since 0.0.3
      */
     public static final String B_MESSAGE_PUSH = "B_MESSAGE_PUSH";
+
+    /**
+     * 消费者消费状态-批量
+     * @since 0.1.3
+     */
+    public static final String C_CONSUMER_STATUS_BATCH = "C_CONSUMER_STATUS_BATCH";
+
+    /**
+     * 生产者发送消息-批量
+     * @since 0.1.3
+     */
+    public static final String P_SEND_MSG_BATCH = "P_SEND_MSG_BATCH";
+
+    /**
+     * 生产者发送消息-批量
+     * @since 0.1.3
+     */
+    public static final String P_SEND_MSG_ONE_WAY_BATCH = "P_SEND_MSG_ONE_WAY_BATCH";
 
 }

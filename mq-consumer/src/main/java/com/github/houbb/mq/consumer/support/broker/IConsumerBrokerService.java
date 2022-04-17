@@ -2,10 +2,13 @@ package com.github.houbb.mq.consumer.support.broker;
 
 import com.github.houbb.mq.common.api.Destroyable;
 import com.github.houbb.mq.common.dto.req.MqCommonReq;
+import com.github.houbb.mq.common.dto.req.component.MqConsumerUpdateStatusDto;
 import com.github.houbb.mq.common.dto.resp.MqCommonResp;
 import com.github.houbb.mq.common.dto.resp.MqConsumerPullResp;
 import com.github.houbb.mq.common.resp.ConsumerStatus;
 import io.netty.channel.Channel;
+
+import java.util.List;
 
 /**
  * @author binbin.hou
@@ -90,5 +93,13 @@ public interface IConsumerBrokerService extends Destroyable {
      */
     MqCommonResp consumerStatusAck(String messageId,
                              ConsumerStatus consumerStatus);
+
+    /**
+     * 消费状态回执-批量
+     * @param statusDtoList 状态列表
+     * @return 结果
+     * @since 0.1.3
+     */
+    MqCommonResp consumerStatusAckBatch(List<MqConsumerUpdateStatusDto> statusDtoList);
 
 }

@@ -7,9 +7,11 @@ import com.github.houbb.heaven.util.util.regex.RegexUtil;
 import com.github.houbb.log.integration.core.Log;
 import com.github.houbb.log.integration.core.LogFactory;
 import com.github.houbb.mq.broker.dto.persist.MqMessagePersistPut;
+import com.github.houbb.mq.broker.dto.persist.MqMessagePersistPutBatch;
 import com.github.houbb.mq.common.constant.MessageStatusConst;
 import com.github.houbb.mq.common.dto.req.MqConsumerPullReq;
 import com.github.houbb.mq.common.dto.req.MqMessage;
+import com.github.houbb.mq.common.dto.req.component.MqConsumerUpdateStatusDto;
 import com.github.houbb.mq.common.dto.resp.MqCommonResp;
 import com.github.houbb.mq.common.dto.resp.MqConsumerPullResp;
 import com.github.houbb.mq.common.resp.MqCommonRespCode;
@@ -41,6 +43,15 @@ public class LocalMqBrokerPersist implements IMqBrokerPersist {
     //3. 通知消费
     @Override
     public synchronized MqCommonResp put(MqMessagePersistPut put) {
+        this.doPut(put);
+
+        MqCommonResp commonResp = new MqCommonResp();
+        commonResp.setRespCode(MqCommonRespCode.SUCCESS.getCode());
+        commonResp.setRespMessage(MqCommonRespCode.SUCCESS.getMsg());
+        return commonResp;
+    }
+
+    private void doPut(MqMessagePersistPut put) {
         log.info("put elem: {}", JSON.toJSON(put));
 
         MqMessage mqMessage = put.getMqMessage();
@@ -48,6 +59,14 @@ public class LocalMqBrokerPersist implements IMqBrokerPersist {
 
         // 放入元素
         MapUtil.putToListMap(map, topic, put);
+    }
+
+    @Override
+    public MqCommonResp putBatch(List<MqMessagePersistPut> putList) {
+        // 构建列表
+        for(MqMessagePersistPut put : putList) {
+            this.doPut(put);
+        }
 
         MqCommonResp commonResp = new MqCommonResp();
         commonResp.setRespCode(MqCommonRespCode.SUCCESS.getCode());
@@ -60,6 +79,19 @@ public class LocalMqBrokerPersist implements IMqBrokerPersist {
                                      String consumerGroupName,
                                      String status) {
         // 这里性能比较差，所以不可以用于生产。仅作为测试验证
+        this.doUpdateStatus(messageId, consumerGroupName, status);
+
+        MqCommonResp commonResp = new MqCommonResp();
+        commonResp.setRespCode(MqCommonRespCode.SUCCESS.getCode());
+        commonResp.setRespMessage(MqCommonRespCode.SUCCESS.getMsg());
+        return commonResp;
+    }
+
+
+    private void doUpdateStatus(String messageId,
+                                String consumerGroupName,
+                                String status) {
+        // 这里性能比较差，所以不可以用于生产。仅作为测试验证
         for(List<MqMessagePersistPut> list : map.values()) {
             for(MqMessagePersistPut put : list) {
                 MqMessage mqMessage = put.getMqMessage();
@@ -69,6 +101,14 @@ public class LocalMqBrokerPersist implements IMqBrokerPersist {
                     break;
                 }
             }
+        }
+    }
+
+    @Override
+    public MqCommonResp updateStatusBatch(List<MqConsumerUpdateStatusDto> statusDtoList) {
+        for(MqConsumerUpdateStatusDto statusDto : statusDtoList) {
+            this.doUpdateStatus(statusDto.getMessageId(), statusDto.getConsumerGroupName(),
+                    statusDto.getMessageStatus());
         }
 
         MqCommonResp commonResp = new MqCommonResp();

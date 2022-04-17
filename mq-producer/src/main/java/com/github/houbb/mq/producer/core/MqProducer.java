@@ -17,10 +17,13 @@ import com.github.houbb.mq.common.support.status.StatusManager;
 import com.github.houbb.mq.producer.api.IMqProducer;
 import com.github.houbb.mq.producer.constant.ProducerConst;
 import com.github.houbb.mq.producer.constant.ProducerRespCode;
+import com.github.houbb.mq.producer.dto.SendBatchResult;
 import com.github.houbb.mq.producer.dto.SendResult;
 import com.github.houbb.mq.producer.support.broker.IProducerBrokerService;
 import com.github.houbb.mq.producer.support.broker.ProducerBrokerConfig;
 import com.github.houbb.mq.producer.support.broker.ProducerBrokerService;
+
+import java.util.List;
 
 /**
  * 默认 mq 生产者
@@ -184,6 +187,16 @@ public class MqProducer extends Thread implements IMqProducer {
     @Override
     public SendResult sendOneWay(MqMessage mqMessage) {
         return this.producerBrokerService.sendOneWay(mqMessage);
+    }
+
+    @Override
+    public SendBatchResult sendBatch(List<MqMessage> mqMessageList) {
+        return producerBrokerService.sendBatch(mqMessageList);
+    }
+
+    @Override
+    public SendBatchResult sendOneWayBatch(List<MqMessage> mqMessageList) {
+        return producerBrokerService.sendOneWayBatch(mqMessageList);
     }
 
 }

@@ -12,6 +12,7 @@ import com.github.houbb.mq.broker.utils.InnerChannelUtils;
 import com.github.houbb.mq.common.constant.MethodType;
 import com.github.houbb.mq.common.dto.req.MqCommonReq;
 import com.github.houbb.mq.common.dto.req.MqMessage;
+import com.github.houbb.mq.common.dto.req.MqMessageBatchReq;
 import com.github.houbb.mq.common.dto.resp.MqCommonResp;
 import com.github.houbb.mq.common.resp.MqCommonRespCode;
 import com.github.houbb.mq.common.resp.MqException;
@@ -26,6 +27,7 @@ import com.github.houbb.mq.common.util.RandomUtils;
 import com.github.houbb.mq.producer.constant.ProducerRespCode;
 import com.github.houbb.mq.producer.constant.SendStatus;
 import com.github.houbb.mq.producer.core.MqProducer;
+import com.github.houbb.mq.producer.dto.SendBatchResult;
 import com.github.houbb.mq.producer.dto.SendResult;
 import com.github.houbb.mq.producer.handler.MqProducerHandler;
 import com.github.houbb.sisyphus.core.core.Retryer;
@@ -35,6 +37,7 @@ import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelInitializer;
 import io.netty.handler.codec.DelimiterBasedFrameDecoder;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
 
@@ -252,6 +255,78 @@ public class ProducerBrokerService implements IProducerBrokerService{
         this.callServer(channel, mqMessage, null);
 
         return SendResult.of(messageId, SendStatus.SUCCESS);
+    }
+
+    @Override
+    public SendBatchResult sendBatch(List<MqMessage> mqMessageList) {
+        final List<String> messageIdList = this.fillMessageList(mqMessageList);
+
+        final MqMessageBatchReq batchReq = new MqMessageBatchReq();
+        batchReq.setMqMessageList(mqMessageList);
+        String traceId = IdHelper.uuid32();
+        batchReq.setTraceId(traceId);
+        batchReq.setMethodType(MethodType.P_SEND_MSG_BATCH);
+
+        return Retryer.<SendBatchResult>newInstance()
+                .maxAttempt(maxAttempt)
+                .callable(new Callable<SendBatchResult>() {
+                    @Override
+                    public SendBatchResult call() throws Exception {
+                        return doSendBatch(messageIdList, batchReq, false);
+                    }
+                }).retryCall();
+    }
+
+    private SendBatchResult doSendBatch(List<String> messageIdList,
+                                   MqMessageBatchReq batchReq,
+                                   boolean oneWay) {
+        log.info("[Producer] 批量发送消息 messageIdList: {}, batchReq: {}, oneWay: {}",
+                messageIdList, JSON.toJSON(batchReq), oneWay);
+
+        // 以第一个 sharding-key 为准。
+        // 后续的会被忽略
+        MqMessage mqMessage = batchReq.getMqMessageList().get(0);
+        Channel channel = getChannel(mqMessage.getShardingKey());
+
+        //one-way
+        if(oneWay) {
+            log.warn("[Producer] ONE-WAY send, ignore result");
+            return SendBatchResult.of(messageIdList, SendStatus.SUCCESS);
+        }
+
+        MqCommonResp resp = callServer(channel, batchReq, MqCommonResp.class);
+        if(MqCommonRespCode.SUCCESS.getCode().equals(resp.getRespCode())) {
+            return SendBatchResult.of(messageIdList, SendStatus.SUCCESS);
+        }
+
+        throw new MqException(ProducerRespCode.MSG_SEND_FAILED);
+    }
+
+    private List<String> fillMessageList(final List<MqMessage> mqMessageList) {
+        List<String> idList = new ArrayList<>(mqMessageList.size());
+
+        for(MqMessage mqMessage : mqMessageList) {
+            String messageId = IdHelper.uuid32();
+            mqMessage.setTraceId(messageId);
+            mqMessage.setGroupName(groupName);
+
+            idList.add(messageId);
+        }
+
+        return idList;
+    }
+
+    @Override
+    public SendBatchResult sendOneWayBatch(List<MqMessage> mqMessageList) {
+        List<String> messageIdList = this.fillMessageList(mqMessageList);
+
+        MqMessageBatchReq batchReq = new MqMessageBatchReq();
+        batchReq.setMqMessageList(mqMessageList);
+        String traceId = IdHelper.uuid32();
+        batchReq.setTraceId(traceId);
+        batchReq.setMethodType(MethodType.P_SEND_MSG_ONE_WAY_BATCH);
+
+        return doSendBatch(messageIdList, batchReq, true);
     }
 
     @Override

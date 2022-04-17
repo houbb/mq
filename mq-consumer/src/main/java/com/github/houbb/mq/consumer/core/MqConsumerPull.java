@@ -6,6 +6,7 @@ import com.github.houbb.log.integration.core.Log;
 import com.github.houbb.log.integration.core.LogFactory;
 import com.github.houbb.mq.common.constant.ConsumerTypeConst;
 import com.github.houbb.mq.common.dto.req.MqMessage;
+import com.github.houbb.mq.common.dto.req.component.MqConsumerUpdateStatusDto;
 import com.github.houbb.mq.common.dto.resp.MqCommonResp;
 import com.github.houbb.mq.common.dto.resp.MqConsumerPullResp;
 import com.github.houbb.mq.common.resp.ConsumerStatus;
@@ -61,6 +62,12 @@ public class MqConsumerPull extends MqConsumerPush  {
      */
     private final List<MqTopicTagDto> subscribeList = new ArrayList<>();
 
+    /**
+     * 状态回执是否批量
+     * @since 0.1.3
+     */
+    private boolean ackBatchFlag = true;
+
     public MqConsumerPull size(int size) {
         this.size = size;
         return this;
@@ -73,6 +80,11 @@ public class MqConsumerPull extends MqConsumerPush  {
 
     public MqConsumerPull pullPeriodSeconds(int pullPeriodSeconds) {
         this.pullPeriodSeconds = pullPeriodSeconds;
+        return this;
+    }
+
+    public MqConsumerPull ackBatchFlag(boolean ackBatchFlag) {
+        this.ackBatchFlag = ackBatchFlag;
         return this;
     }
 
@@ -100,6 +112,7 @@ public class MqConsumerPull extends MqConsumerPush  {
                     if(MqCommonRespCode.SUCCESS.getCode().equals(resp.getRespCode())) {
                         List<MqMessage> mqMessageList = resp.getList();
                         if(CollectionUtil.isNotEmpty(mqMessageList)) {
+                            List<MqConsumerUpdateStatusDto> statusDtoList = new ArrayList<>(mqMessageList.size());
                             for(MqMessage mqMessage : mqMessageList) {
                                 IMqConsumerListenerContext context = new MqConsumerListenerContext();
                                 final String messageId = mqMessage.getTraceId();
@@ -107,8 +120,24 @@ public class MqConsumerPull extends MqConsumerPush  {
                                 log.info("消息：{} 消费结果 {}", messageId, consumerStatus);
 
                                 // 状态同步更新
-                                MqCommonResp ackResp = consumerBrokerService.consumerStatusAck(messageId, consumerStatus);
-                                log.info("消息：{} 状态回执结果 {}", messageId, JSON.toJSON(ackResp));
+                                if(!ackBatchFlag) {
+                                    MqCommonResp ackResp = consumerBrokerService.consumerStatusAck(messageId, consumerStatus);
+                                    log.info("消息：{} 状态回执结果 {}", messageId, JSON.toJSON(ackResp));
+                                } else {
+                                    // 批量
+                                    MqConsumerUpdateStatusDto statusDto = new MqConsumerUpdateStatusDto();
+                                    statusDto.setMessageId(messageId);
+                                    statusDto.setMessageStatus(consumerStatus.getCode());
+                                    statusDto.setConsumerGroupName(groupName);
+                                    statusDtoList.add(statusDto);
+                                }
+                            }
+
+                            // 批量执行
+                            if(ackBatchFlag) {
+                                MqCommonResp ackResp = consumerBrokerService.consumerStatusAckBatch(statusDtoList);
+                                log.info("消息：{} 状态批量回执结果 {}", statusDtoList, JSON.toJSON(ackResp));
+                                statusDtoList = null;
                             }
                         }
                     } else {

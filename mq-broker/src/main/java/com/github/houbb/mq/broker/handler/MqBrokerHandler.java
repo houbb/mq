@@ -13,15 +13,14 @@ import com.github.houbb.mq.broker.dto.ServiceEntry;
 import com.github.houbb.mq.broker.dto.consumer.ConsumerSubscribeReq;
 import com.github.houbb.mq.broker.dto.consumer.ConsumerUnSubscribeReq;
 import com.github.houbb.mq.broker.dto.persist.MqMessagePersistPut;
+import com.github.houbb.mq.broker.dto.persist.MqMessagePersistPutBatch;
 import com.github.houbb.mq.broker.support.persist.IMqBrokerPersist;
 import com.github.houbb.mq.broker.support.push.BrokerPushContext;
 import com.github.houbb.mq.broker.support.push.IBrokerPushService;
 import com.github.houbb.mq.common.constant.MessageStatusConst;
 import com.github.houbb.mq.common.constant.MethodType;
-import com.github.houbb.mq.common.dto.req.MqConsumerPullReq;
-import com.github.houbb.mq.common.dto.req.MqConsumerUpdateStatusReq;
-import com.github.houbb.mq.common.dto.req.MqHeartBeatReq;
-import com.github.houbb.mq.common.dto.req.MqMessage;
+import com.github.houbb.mq.common.dto.req.*;
+import com.github.houbb.mq.common.dto.req.component.MqConsumerUpdateStatusDto;
 import com.github.houbb.mq.common.dto.resp.MqCommonResp;
 import com.github.houbb.mq.common.resp.MqCommonRespCode;
 import com.github.houbb.mq.common.rpc.RpcMessageDto;
@@ -33,6 +32,7 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -195,6 +195,17 @@ public class MqBrokerHandler extends SimpleChannelInboundHandler {
                 return null;
             }
 
+            // 生产者消息发送-批量
+            if(MethodType.P_SEND_MSG_BATCH.equals(methodType)) {
+                return handleProducerSendMsgBatch(channelId, json);
+            }
+            // 生产者消息发送-ONE WAY-批量
+            if(MethodType.P_SEND_MSG_ONE_WAY_BATCH.equals(methodType)) {
+                handleProducerSendMsgBatch(channelId, json);
+
+                return null;
+            }
+
             // 消费者注册
             if(MethodType.C_REGISTER.equals(methodType)) {
                 BrokerRegisterReq registerReq = JSON.parseObject(json, BrokerRegisterReq.class);
@@ -234,6 +245,12 @@ public class MqBrokerHandler extends SimpleChannelInboundHandler {
                 final String consumerGroupName = req.getConsumerGroupName();
                 return mqBrokerPersist.updateStatus(messageId, consumerGroupName, messageStatus);
             }
+            //消费者消费状态 ACK-批量
+            if(MethodType.C_CONSUMER_STATUS_BATCH.equals(methodType)) {
+                MqConsumerUpdateStatusBatchReq req = JSON.parseObject(json, MqConsumerUpdateStatusBatchReq.class);
+                final List<MqConsumerUpdateStatusDto> statusDtoList = req.getStatusList();
+                return mqBrokerPersist.updateStatusBatch(statusDtoList);
+            }
 
             throw new UnsupportedOperationException("暂不支持的方法类型");
         } catch (Exception exception) {
@@ -264,6 +281,53 @@ public class MqBrokerHandler extends SimpleChannelInboundHandler {
         MqCommonResp commonResp = mqBrokerPersist.put(persistPut);
         this.asyncHandleMessage(persistPut);
         return commonResp;
+    }
+
+    /**
+     * 处理生产者发送的消息
+     *
+     * @param channelId 通道标识
+     * @param json 消息体
+     * @since 0.1.3
+     */
+    private MqCommonResp handleProducerSendMsgBatch(String channelId, String json) {
+        MqMessageBatchReq batchReq = JSON.parseObject(json, MqMessageBatchReq.class);
+        final ServiceEntry serviceEntry = registerProducerService.getServiceEntry(channelId);
+
+        List<MqMessagePersistPut> putList = buildPersistPutList(batchReq, serviceEntry);
+
+        MqCommonResp commonResp = mqBrokerPersist.putBatch(putList);
+
+        // 遍历异步推送
+        for(MqMessagePersistPut persistPut : putList) {
+            this.asyncHandleMessage(persistPut);
+        }
+
+        return commonResp;
+    }
+
+    /**
+     * 构建列表
+     * @param batchReq 入参
+     * @param serviceEntry 实例
+     * @return 结果
+     */
+    private List<MqMessagePersistPut> buildPersistPutList(MqMessageBatchReq batchReq,
+                                                          final ServiceEntry serviceEntry) {
+        List<MqMessagePersistPut> resultList = new ArrayList<>();
+
+        // 构建列表
+        List<MqMessage> messageList = batchReq.getMqMessageList();
+        for(MqMessage mqMessage : messageList) {
+            MqMessagePersistPut put = new MqMessagePersistPut();
+            put.setRpcAddress(serviceEntry);
+            put.setMessageStatus(MessageStatusConst.WAIT_CONSUMER);
+            put.setMqMessage(mqMessage);
+
+            resultList.add(put);
+        }
+
+        return resultList;
     }
 
     /**

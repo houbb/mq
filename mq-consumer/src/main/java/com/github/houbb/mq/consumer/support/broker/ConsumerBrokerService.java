@@ -13,10 +13,8 @@ import com.github.houbb.mq.broker.dto.consumer.ConsumerSubscribeReq;
 import com.github.houbb.mq.broker.dto.consumer.ConsumerUnSubscribeReq;
 import com.github.houbb.mq.broker.utils.InnerChannelUtils;
 import com.github.houbb.mq.common.constant.MethodType;
-import com.github.houbb.mq.common.dto.req.MqCommonReq;
-import com.github.houbb.mq.common.dto.req.MqConsumerPullReq;
-import com.github.houbb.mq.common.dto.req.MqConsumerUpdateStatusReq;
-import com.github.houbb.mq.common.dto.req.MqHeartBeatReq;
+import com.github.houbb.mq.common.dto.req.*;
+import com.github.houbb.mq.common.dto.req.component.MqConsumerUpdateStatusDto;
 import com.github.houbb.mq.common.dto.resp.MqCommonResp;
 import com.github.houbb.mq.common.dto.resp.MqConsumerPullResp;
 import com.github.houbb.mq.common.resp.ConsumerStatus;
@@ -381,6 +379,31 @@ public class ConsumerBrokerService implements IConsumerBrokerService {
                         MqCommonResp resp = callServer(channel, req, MqCommonResp.class);
                         if(!MqCommonRespCode.SUCCESS.getCode().equals(resp.getRespCode())) {
                             throw new MqException(ConsumerRespCode.CONSUMER_STATUS_ACK_FAILED);
+                        }
+                        return resp;
+                    }
+                }).retryCall();
+    }
+
+    @Override
+    public MqCommonResp consumerStatusAckBatch(List<MqConsumerUpdateStatusDto> statusDtoList) {
+        final MqConsumerUpdateStatusBatchReq req = new MqConsumerUpdateStatusBatchReq();
+        req.setStatusList(statusDtoList);
+
+        final String traceId = IdHelper.uuid32();
+        req.setTraceId(traceId);
+        req.setMethodType(MethodType.C_CONSUMER_STATUS_BATCH);
+
+        // 重试
+        return Retryer.<MqCommonResp>newInstance()
+                .maxAttempt(consumerStatusMaxAttempt)
+                .callable(new Callable<MqCommonResp>() {
+                    @Override
+                    public MqCommonResp call() throws Exception {
+                        Channel channel = getChannel(null);
+                        MqCommonResp resp = callServer(channel, req, MqCommonResp.class);
+                        if(!MqCommonRespCode.SUCCESS.getCode().equals(resp.getRespCode())) {
+                            throw new MqException(ConsumerRespCode.CONSUMER_STATUS_ACK_BATCH_FAILED);
                         }
                         return resp;
                     }
