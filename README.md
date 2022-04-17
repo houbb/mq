@@ -195,15 +195,11 @@ System.out.println(JSON.toJSON(sendResult));
 
 - [x] pull 消息消费的 ACK 处理
 
-- [ ] offline message 离线消息
+- [x] broker springboot 实现
 
-- [ ] dead message 死信队列
+- [x] 消息的 ack 处理，要基于 groupName 进行处理
 
-- [ ] broker springboot 实现
-
-- [ ] 消息的 ack 处理，要基于 groupName 进行处理
-
-messageId groupName status，和原始消息表分开
+- [ ] 消息的批量发送，批量 ACK
 
 - [ ] 顺序消息
 
@@ -213,8 +209,11 @@ messageId groupName status，和原始消息表分开
 
 - [ ] 定时消息
 
-~~- [ ] 流量控制~~
+- [ ] 流量控制
 
 - [ ] 消息可靠性
 
+- [ ] offline message 离线消息
+
+- [ ] dead message 死信队列
 
