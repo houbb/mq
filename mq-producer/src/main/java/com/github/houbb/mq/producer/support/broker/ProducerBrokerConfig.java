@@ -57,8 +57,38 @@ public class ProducerBrokerConfig {
      */
     private int maxAttempt;
 
+    /**
+     * 账户标识
+     * @since 0.1.4
+     */
+    private String appKey;
+
+    /**
+     * 账户密码
+     * @since 0.1.4
+     */
+    private String appSecret;
+
     public static ProducerBrokerConfig newInstance() {
         return new ProducerBrokerConfig();
+    }
+
+    public String appKey() {
+        return appKey;
+    }
+
+    public ProducerBrokerConfig appKey(String appKey) {
+        this.appKey = appKey;
+        return this;
+    }
+
+    public String appSecret() {
+        return appSecret;
+    }
+
+    public ProducerBrokerConfig appSecret(String appSecret) {
+        this.appSecret = appSecret;
+        return this;
     }
 
     public int maxAttempt() {

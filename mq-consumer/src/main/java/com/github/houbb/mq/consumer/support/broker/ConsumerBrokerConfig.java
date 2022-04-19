@@ -76,6 +76,36 @@ public class ConsumerBrokerConfig {
      */
     private int consumerStatusMaxAttempt = 3;
 
+    /**
+     * 账户标识
+     * @since 0.1.4
+     */
+    protected String appKey;
+
+    /**
+     * 账户密码
+     * @since 0.1.4
+     */
+    protected String appSecret;
+
+    public String appKey() {
+        return appKey;
+    }
+
+    public ConsumerBrokerConfig appKey(String appKey) {
+        this.appKey = appKey;
+        return this;
+    }
+
+    public String appSecret() {
+        return appSecret;
+    }
+
+    public ConsumerBrokerConfig appSecret(String appSecret) {
+        this.appSecret = appSecret;
+        return this;
+    }
+
     public int consumerStatusMaxAttempt() {
         return consumerStatusMaxAttempt;
     }

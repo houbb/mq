@@ -6,7 +6,7 @@ import com.github.houbb.heaven.response.respcode.RespCode;
  * @author binbin.hou
  * @since 1.0.0
  */
-public class MqException extends RuntimeException {
+public class MqException extends RuntimeException implements RespCode{
 
     private final RespCode respCode;
 
@@ -32,5 +32,15 @@ public class MqException extends RuntimeException {
     public MqException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace, RespCode respCode) {
         super(message, cause, enableSuppression, writableStackTrace);
         this.respCode = respCode;
+    }
+
+    @Override
+    public String getCode() {
+        return this.respCode.getCode();
+    }
+
+    @Override
+    public String getMsg() {
+        return this.respCode.getMsg();
     }
 }

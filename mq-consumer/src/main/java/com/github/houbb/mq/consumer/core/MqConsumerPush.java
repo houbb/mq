@@ -109,7 +109,37 @@ public class MqConsumerPush extends Thread implements IMqConsumer  {
      * 消费状态更新最大尝试次数
      * @since 0.1.0
      */
-    private int consumerStatusMaxAttempt = 3;
+    protected int consumerStatusMaxAttempt = 3;
+
+    /**
+     * 账户标识
+     * @since 0.1.4
+     */
+    protected String appKey;
+
+    /**
+     * 账户密码
+     * @since 0.1.4
+     */
+    protected String appSecret;
+
+    public String appKey() {
+        return appKey;
+    }
+
+    public MqConsumerPush appKey(String appKey) {
+        this.appKey = appKey;
+        return this;
+    }
+
+    public String appSecret() {
+        return appSecret;
+    }
+
+    public MqConsumerPush appSecret(String appSecret) {
+        this.appSecret = appSecret;
+        return this;
+    }
 
     public MqConsumerPush consumerStatusMaxAttempt(int consumerStatusMaxAttempt) {
         this.consumerStatusMaxAttempt = consumerStatusMaxAttempt;
@@ -186,7 +216,9 @@ public class MqConsumerPush extends Thread implements IMqConsumer  {
                     .loadBalance(loadBalance)
                     .subscribeMaxAttempt(subscribeMaxAttempt)
                     .unSubscribeMaxAttempt(unSubscribeMaxAttempt)
-                    .consumerStatusMaxAttempt(consumerStatusMaxAttempt);
+                    .consumerStatusMaxAttempt(consumerStatusMaxAttempt)
+                    .appKey(appKey)
+                    .appSecret(appSecret);
 
             //1. 初始化
             this.consumerBrokerService.initChannelFutureList(config);
@@ -211,6 +243,9 @@ public class MqConsumerPush extends Thread implements IMqConsumer  {
             log.info("MQ 消费者启动完成");
         } catch (Exception e) {
             log.error("MQ 消费者启动异常", e);
+
+            statusManager.initFailed(true);
+
             throw new MqException(ConsumerRespCode.RPC_INIT_FAILED);
         }
     }

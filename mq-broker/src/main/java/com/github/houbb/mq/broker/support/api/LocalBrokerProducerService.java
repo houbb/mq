@@ -11,9 +11,11 @@ import com.github.houbb.log.integration.core.LogFactory;
 import com.github.houbb.mq.broker.api.IBrokerProducerService;
 import com.github.houbb.mq.broker.dto.BrokerServiceEntryChannel;
 import com.github.houbb.mq.broker.dto.ServiceEntry;
+import com.github.houbb.mq.broker.resp.MqBrokerRespCode;
 import com.github.houbb.mq.broker.utils.InnerChannelUtils;
 import com.github.houbb.mq.common.dto.resp.MqCommonResp;
 import com.github.houbb.mq.common.resp.MqCommonRespCode;
+import com.github.houbb.mq.common.resp.MqException;
 import com.github.houbb.mq.common.util.ChannelUtil;
 import io.netty.channel.Channel;
 
@@ -62,6 +64,14 @@ public class LocalBrokerProducerService implements IBrokerProducerService {
     @Override
     public ServiceEntry getServiceEntry(String channelId) {
         return registerMap.get(channelId);
+    }
+
+    @Override
+    public void checkValid(String channelId) {
+        if(!registerMap.containsKey(channelId)) {
+            log.error("channelId: {} 未注册", channelId);
+            throw new MqException(MqBrokerRespCode.P_REGISTER_CHANNEL_NOT_VALID);
+        }
     }
 
 }

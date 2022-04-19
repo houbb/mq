@@ -101,6 +101,18 @@ public class ProducerBrokerService implements IProducerBrokerService{
      */
     private int maxAttempt = 3;
 
+    /**
+     * 账户标识
+     * @since 0.1.4
+     */
+    private String appKey;
+
+    /**
+     * 账户密码
+     * @since 0.1.4
+     */
+    private String appSecret;
+
     @Override
     public void initChannelFutureList(ProducerBrokerConfig config) {
         //1. 配置初始化
@@ -112,6 +124,8 @@ public class ProducerBrokerService implements IProducerBrokerService{
         this.statusManager = config.statusManager();
         this.loadBalance = config.loadBalance();
         this.maxAttempt = config.maxAttempt();
+        this.appKey = config.appKey();
+        this.appSecret = config.appSecret();
 
         //2. 初始化
         this.channelFutureList = ChannelFutureUtils.initChannelFutureList(brokerAddress,
@@ -139,6 +153,7 @@ public class ProducerBrokerService implements IProducerBrokerService{
 
     @Override
     public void registerToBroker() {
+        int successCount = 0;
         for(RpcChannelFuture channelFuture : this.channelFutureList) {
             ServiceEntry serviceEntry = new ServiceEntry();
             serviceEntry.setGroupName(groupName);
@@ -150,11 +165,22 @@ public class ProducerBrokerService implements IProducerBrokerService{
             brokerRegisterReq.setServiceEntry(serviceEntry);
             brokerRegisterReq.setMethodType(MethodType.P_REGISTER);
             brokerRegisterReq.setTraceId(IdHelper.uuid32());
+            brokerRegisterReq.setAppKey(appKey);
+            brokerRegisterReq.setAppSecret(appSecret);
 
             log.info("[Register] 开始注册到 broker：{}", JSON.toJSON(brokerRegisterReq));
             final Channel channel = channelFuture.getChannelFuture().channel();
             MqCommonResp resp = callServer(channel, brokerRegisterReq, MqCommonResp.class);
             log.info("[Register] 完成注册到 broker：{}", JSON.toJSON(resp));
+
+            if(MqCommonRespCode.SUCCESS.getCode().equals(resp.getRespCode())) {
+                successCount++;
+            }
+        }
+
+        if(successCount <= 0 && check) {
+            log.error("校验 broker 可用性，可连接成功数为 0");
+            throw new MqException(MqCommonRespCode.P_REGISTER_TO_BROKER_FAILED);
         }
     }
 
@@ -204,6 +230,11 @@ public class ProducerBrokerService implements IProducerBrokerService{
     public Channel getChannel(String key) {
         // 等待启动完成
         while (!statusManager.status()) {
+            if(statusManager.initFailed()) {
+                log.error("初始化失败");
+                throw new MqException(MqCommonRespCode.P_INIT_FAILED);
+            }
+
             log.debug("等待初始化完成...");
             DateUtil.sleep(100);
         }

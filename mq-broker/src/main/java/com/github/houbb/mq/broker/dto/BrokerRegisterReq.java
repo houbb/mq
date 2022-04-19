@@ -13,6 +13,18 @@ public class BrokerRegisterReq extends MqCommonReq {
      */
     private ServiceEntry serviceEntry;
 
+    /**
+     * 账户标识
+     * @since 0.1.4
+     */
+    private String appKey;
+
+    /**
+     * 账户密码
+     * @since 0.1.4
+     */
+    private String appSecret;
+
     public ServiceEntry getServiceEntry() {
         return serviceEntry;
     }
@@ -20,4 +32,30 @@ public class BrokerRegisterReq extends MqCommonReq {
     public void setServiceEntry(ServiceEntry serviceEntry) {
         this.serviceEntry = serviceEntry;
     }
+
+    public String getAppKey() {
+        return appKey;
+    }
+
+    public void setAppKey(String appKey) {
+        this.appKey = appKey;
+    }
+
+    public String getAppSecret() {
+        return appSecret;
+    }
+
+    public void setAppSecret(String appSecret) {
+        this.appSecret = appSecret;
+    }
+
+    @Override
+    public String toString() {
+        return "BrokerRegisterReq{" +
+                "serviceEntry=" + serviceEntry +
+                ", appKey='" + appKey + '\'' +
+                ", appSecret='" + appSecret + '\'' +
+                "} " + super.toString();
+    }
+
 }

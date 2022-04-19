@@ -17,6 +17,8 @@ public class ProducerMain {
 
     public static void main(String[] args) {
         MqProducer mqProducer = new MqProducer();
+        mqProducer.appKey("test")
+                .appSecret("mq");
         mqProducer.start();
 
         for(int i = 0; i < 20; i++) {

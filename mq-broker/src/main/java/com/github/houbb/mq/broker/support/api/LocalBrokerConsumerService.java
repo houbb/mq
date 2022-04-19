@@ -14,11 +14,13 @@ import com.github.houbb.mq.broker.dto.ServiceEntry;
 import com.github.houbb.mq.broker.dto.consumer.ConsumerSubscribeBo;
 import com.github.houbb.mq.broker.dto.consumer.ConsumerSubscribeReq;
 import com.github.houbb.mq.broker.dto.consumer.ConsumerUnSubscribeReq;
+import com.github.houbb.mq.broker.resp.MqBrokerRespCode;
 import com.github.houbb.mq.broker.utils.InnerChannelUtils;
 import com.github.houbb.mq.common.dto.req.MqHeartBeatReq;
 import com.github.houbb.mq.common.dto.req.MqMessage;
 import com.github.houbb.mq.common.dto.resp.MqCommonResp;
 import com.github.houbb.mq.common.resp.MqCommonRespCode;
+import com.github.houbb.mq.common.resp.MqException;
 import com.github.houbb.mq.common.util.ChannelUtil;
 import com.github.houbb.mq.common.util.RandomUtils;
 import io.netty.channel.Channel;
@@ -239,6 +241,14 @@ public class LocalBrokerConsumerService implements IBrokerConsumerService {
         entryChannel.setLastAccessTime(mqHeartBeatReq.getTime());
 
         heartbeatMap.put(channelId, entryChannel);
+    }
+
+    @Override
+    public void checkValid(String channelId) {
+        if(!registerMap.containsKey(channelId)) {
+            log.error("channelId: {} 未注册", channelId);
+            throw new MqException(MqBrokerRespCode.C_REGISTER_CHANNEL_NOT_VALID);
+        }
     }
 
 }

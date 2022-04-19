@@ -47,4 +47,11 @@ public interface IBrokerProducerService {
      */
     ServiceEntry getServiceEntry(final String channelId);
 
+    /**
+     * 校验有效性
+     * @param channelId 通道唯一标识
+     * @since 0.1.4
+     */
+    void checkValid(final String channelId);
+
 }

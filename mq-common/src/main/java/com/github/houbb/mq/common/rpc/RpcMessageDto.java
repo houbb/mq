@@ -100,4 +100,17 @@ public class RpcMessageDto implements Serializable {
         return dto;
     }
 
+    @Override
+    public String toString() {
+        return "RpcMessageDto{" +
+                "requestTime=" + requestTime +
+                ", traceId='" + traceId + '\'' +
+                ", methodType='" + methodType + '\'' +
+                ", isRequest=" + isRequest +
+                ", respCode='" + respCode + '\'' +
+                ", respMsg='" + respMsg + '\'' +
+                ", json='" + json + '\'' +
+                '}';
+    }
+
 }

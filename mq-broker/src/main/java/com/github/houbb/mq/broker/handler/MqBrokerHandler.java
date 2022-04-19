@@ -14,15 +14,19 @@ import com.github.houbb.mq.broker.dto.consumer.ConsumerSubscribeReq;
 import com.github.houbb.mq.broker.dto.consumer.ConsumerUnSubscribeReq;
 import com.github.houbb.mq.broker.dto.persist.MqMessagePersistPut;
 import com.github.houbb.mq.broker.dto.persist.MqMessagePersistPutBatch;
+import com.github.houbb.mq.broker.resp.MqBrokerRespCode;
 import com.github.houbb.mq.broker.support.persist.IMqBrokerPersist;
 import com.github.houbb.mq.broker.support.push.BrokerPushContext;
 import com.github.houbb.mq.broker.support.push.IBrokerPushService;
+import com.github.houbb.mq.broker.support.valid.BrokerRegisterValidService;
+import com.github.houbb.mq.broker.support.valid.IBrokerRegisterValidService;
 import com.github.houbb.mq.common.constant.MessageStatusConst;
 import com.github.houbb.mq.common.constant.MethodType;
 import com.github.houbb.mq.common.dto.req.*;
 import com.github.houbb.mq.common.dto.req.component.MqConsumerUpdateStatusDto;
 import com.github.houbb.mq.common.dto.resp.MqCommonResp;
 import com.github.houbb.mq.common.resp.MqCommonRespCode;
+import com.github.houbb.mq.common.resp.MqException;
 import com.github.houbb.mq.common.rpc.RpcMessageDto;
 import com.github.houbb.mq.common.support.invoke.IInvokeService;
 import com.github.houbb.mq.common.util.ChannelUtil;
@@ -84,6 +88,17 @@ public class MqBrokerHandler extends SimpleChannelInboundHandler {
      * @since 0.0.8
      */
     private int pushMaxAttempt;
+
+    /**
+     * 注册验证服务类
+     * @since 0.1.4
+     */
+    private IBrokerRegisterValidService brokerRegisterValidService;
+
+    public MqBrokerHandler brokerRegisterValidService(IBrokerRegisterValidService brokerRegisterValidService) {
+        this.brokerRegisterValidService = brokerRegisterValidService;
+        return this;
+    }
 
     public MqBrokerHandler invokeService(IInvokeService invokeService) {
         this.invokeService = invokeService;
@@ -177,30 +192,44 @@ public class MqBrokerHandler extends SimpleChannelInboundHandler {
             // 生产者注册
             if(MethodType.P_REGISTER.equals(methodType)) {
                 BrokerRegisterReq registerReq = JSON.parseObject(json, BrokerRegisterReq.class);
+                if(!brokerRegisterValidService.producerValid(registerReq)) {
+                    log.error("{} 生产者注册验证失败", JSON.toJSON(registerReq));
+                    throw new MqException(MqBrokerRespCode.P_REGISTER_VALID_FAILED);
+                }
+
                 return registerProducerService.register(registerReq.getServiceEntry(), channel);
             }
             // 生产者注销
             if(MethodType.P_UN_REGISTER.equals(methodType)) {
+                registerProducerService.checkValid(channelId);
+
                 BrokerRegisterReq registerReq = JSON.parseObject(json, BrokerRegisterReq.class);
                 return registerProducerService.unRegister(registerReq.getServiceEntry(), channel);
             }
             // 生产者消息发送
             if(MethodType.P_SEND_MSG.equals(methodType)) {
+                registerProducerService.checkValid(channelId);
+
                 return handleProducerSendMsg(channelId, json);
             }
             // 生产者消息发送-ONE WAY
             if(MethodType.P_SEND_MSG_ONE_WAY.equals(methodType)) {
+                registerProducerService.checkValid(channelId);
+
                 handleProducerSendMsg(channelId, json);
 
                 return null;
             }
-
             // 生产者消息发送-批量
             if(MethodType.P_SEND_MSG_BATCH.equals(methodType)) {
+                registerProducerService.checkValid(channelId);
+
                 return handleProducerSendMsgBatch(channelId, json);
             }
             // 生产者消息发送-ONE WAY-批量
             if(MethodType.P_SEND_MSG_ONE_WAY_BATCH.equals(methodType)) {
+                registerProducerService.checkValid(channelId);
+
                 handleProducerSendMsgBatch(channelId, json);
 
                 return null;
@@ -209,36 +238,53 @@ public class MqBrokerHandler extends SimpleChannelInboundHandler {
             // 消费者注册
             if(MethodType.C_REGISTER.equals(methodType)) {
                 BrokerRegisterReq registerReq = JSON.parseObject(json, BrokerRegisterReq.class);
+                if(!brokerRegisterValidService.consumerValid(registerReq)) {
+                    log.error("{} 消费者注册验证失败", JSON.toJSON(registerReq));
+                    throw new MqException(MqBrokerRespCode.C_REGISTER_VALID_FAILED);
+                }
+
                 return registerConsumerService.register(registerReq.getServiceEntry(), channel);
             }
             // 消费者注销
             if(MethodType.C_UN_REGISTER.equals(methodType)) {
+                registerConsumerService.checkValid(channelId);
+
                 BrokerRegisterReq registerReq = JSON.parseObject(json, BrokerRegisterReq.class);
                 return registerConsumerService.unRegister(registerReq.getServiceEntry(), channel);
             }
             // 消费者监听注册
             if(MethodType.C_SUBSCRIBE.equals(methodType)) {
+                registerConsumerService.checkValid(channelId);
+
                 ConsumerSubscribeReq req = JSON.parseObject(json, ConsumerSubscribeReq.class);
                 return registerConsumerService.subscribe(req, channel);
             }
             // 消费者监听注销
             if(MethodType.C_UN_SUBSCRIBE.equals(methodType)) {
+                registerConsumerService.checkValid(channelId);
+
                 ConsumerUnSubscribeReq req = JSON.parseObject(json, ConsumerUnSubscribeReq.class);
                 return registerConsumerService.unSubscribe(req, channel);
             }
             // 消费者主动 pull
             if(MethodType.C_MESSAGE_PULL.equals(methodType)) {
+                registerConsumerService.checkValid(channelId);
+
                 MqConsumerPullReq req = JSON.parseObject(json, MqConsumerPullReq.class);
                 return mqBrokerPersist.pull(req, channel);
             }
             // 消费者心跳
             if(MethodType.C_HEARTBEAT.equals(methodType)) {
+                registerConsumerService.checkValid(channelId);
+
                 MqHeartBeatReq req = JSON.parseObject(json, MqHeartBeatReq.class);
                 registerConsumerService.heartbeat(req, channel);
                 return null;
             }
             // 消费者消费状态 ACK
             if(MethodType.C_CONSUMER_STATUS.equals(methodType)) {
+                registerConsumerService.checkValid(channelId);
+
                 MqConsumerUpdateStatusReq req = JSON.parseObject(json, MqConsumerUpdateStatusReq.class);
                 final String messageId = req.getMessageId();
                 final String messageStatus = req.getMessageStatus();
@@ -247,12 +293,21 @@ public class MqBrokerHandler extends SimpleChannelInboundHandler {
             }
             //消费者消费状态 ACK-批量
             if(MethodType.C_CONSUMER_STATUS_BATCH.equals(methodType)) {
+                registerConsumerService.checkValid(channelId);
+
                 MqConsumerUpdateStatusBatchReq req = JSON.parseObject(json, MqConsumerUpdateStatusBatchReq.class);
                 final List<MqConsumerUpdateStatusDto> statusDtoList = req.getStatusList();
                 return mqBrokerPersist.updateStatusBatch(statusDtoList);
             }
 
-            throw new UnsupportedOperationException("暂不支持的方法类型");
+            log.error("暂时不支持的方法类型 {}", methodType);
+            throw new MqException(MqBrokerRespCode.B_NOT_SUPPORT_METHOD);
+        } catch (MqException mqException) {
+            log.error("业务执行异常", mqException);
+            MqCommonResp resp = new MqCommonResp();
+            resp.setRespCode(mqException.getCode());
+            resp.setRespMessage(mqException.getMsg());
+            return resp;
         } catch (Exception exception) {
             log.error("执行异常", exception);
             MqCommonResp resp = new MqCommonResp();

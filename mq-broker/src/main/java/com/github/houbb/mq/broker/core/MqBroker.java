@@ -1,13 +1,12 @@
 package com.github.houbb.mq.broker.core;
 
-import com.github.houbb.heaven.util.common.ArgUtil;
 import com.github.houbb.load.balance.api.ILoadBalance;
 import com.github.houbb.load.balance.api.impl.LoadBalances;
 import com.github.houbb.log.integration.core.Log;
 import com.github.houbb.log.integration.core.LogFactory;
-import com.github.houbb.mq.broker.api.IMqBroker;
 import com.github.houbb.mq.broker.api.IBrokerConsumerService;
 import com.github.houbb.mq.broker.api.IBrokerProducerService;
+import com.github.houbb.mq.broker.api.IMqBroker;
 import com.github.houbb.mq.broker.constant.BrokerConst;
 import com.github.houbb.mq.broker.constant.BrokerRespCode;
 import com.github.houbb.mq.broker.dto.consumer.ConsumerSubscribeBo;
@@ -18,8 +17,9 @@ import com.github.houbb.mq.broker.support.persist.IMqBrokerPersist;
 import com.github.houbb.mq.broker.support.persist.LocalMqBrokerPersist;
 import com.github.houbb.mq.broker.support.push.BrokerPushService;
 import com.github.houbb.mq.broker.support.push.IBrokerPushService;
+import com.github.houbb.mq.broker.support.valid.BrokerRegisterValidService;
+import com.github.houbb.mq.broker.support.valid.IBrokerRegisterValidService;
 import com.github.houbb.mq.common.resp.MqException;
-import com.github.houbb.mq.common.rpc.RpcChannelFuture;
 import com.github.houbb.mq.common.support.invoke.IInvokeService;
 import com.github.houbb.mq.common.support.invoke.impl.InvokeService;
 import com.github.houbb.mq.common.util.DelimiterUtil;
@@ -96,6 +96,12 @@ public class MqBroker extends Thread implements IMqBroker {
      */
     private int pushMaxAttempt = 3;
 
+    /**
+     * 注册验证服务类
+     * @since 0.1.4
+     */
+    private IBrokerRegisterValidService brokerRegisterValidService = new BrokerRegisterValidService();
+
     public MqBroker port(int port) {
         this.port = port;
         return this;
@@ -131,6 +137,16 @@ public class MqBroker extends Thread implements IMqBroker {
         return this;
     }
 
+    public MqBroker pushMaxAttempt(int pushMaxAttempt) {
+        this.pushMaxAttempt = pushMaxAttempt;
+        return this;
+    }
+
+    public MqBroker brokerRegisterValidService(IBrokerRegisterValidService brokerRegisterValidService) {
+        this.brokerRegisterValidService = brokerRegisterValidService;
+        return this;
+    }
+
     private ChannelHandler initChannelHandler() {
         registerConsumerService.loadBalance(this.loadBalance);
 
@@ -142,7 +158,8 @@ public class MqBroker extends Thread implements IMqBroker {
                 .mqBrokerPersist(mqBrokerPersist)
                 .brokerPushService(brokerPushService)
                 .respTimeoutMills(respTimeoutMills)
-                .pushMaxAttempt(pushMaxAttempt);
+                .pushMaxAttempt(pushMaxAttempt)
+                .brokerRegisterValidService(brokerRegisterValidService);
 
         return handler;
     }

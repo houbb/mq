@@ -10,6 +10,7 @@ import com.github.houbb.mq.common.dto.resp.MqCommonResp;
 import com.github.houbb.mq.common.dto.resp.MqConsumerResultResp;
 import com.github.houbb.mq.common.resp.ConsumerStatus;
 import com.github.houbb.mq.common.resp.MqCommonRespCode;
+import com.github.houbb.mq.common.resp.MqException;
 import com.github.houbb.mq.common.rpc.RpcMessageDto;
 import com.github.houbb.mq.common.support.invoke.IInvokeService;
 import com.github.houbb.mq.common.util.ChannelUtil;
@@ -129,8 +130,14 @@ public class MqConsumerHandler extends SimpleChannelInboundHandler {
             resp.setRespMessage(MqCommonRespCode.SUCCESS.getMsg());
             resp.setConsumerStatus(consumerStatus.getCode());
             return resp;
+        } catch (MqException mqException) {
+            log.error("消息消费业务异常", mqException);
+            MqConsumerResultResp resp = new MqConsumerResultResp();
+            resp.setRespCode(mqException.getCode());
+            resp.setRespMessage(mqException.getMsg());
+            return resp;
         } catch (Exception exception) {
-            log.error("消息消费异常", exception);
+            log.error("消息消费系统异常", exception);
             MqConsumerResultResp resp = new MqConsumerResultResp();
             resp.setRespCode(MqCommonRespCode.FAIL.getCode());
             resp.setRespMessage(MqCommonRespCode.FAIL.getMsg());

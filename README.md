@@ -203,11 +203,13 @@ System.out.println(JSON.toJSON(sendResult));
 
 - [x] 消息的 ack 处理，要基于 groupName 进行处理
 
+- [x] 消息的回溯消费 offset 
+
 - [x] 消息的批量发送，批量 ACK
 
-- [ ] 顺序消息 
+- [x] 添加注册鉴权，保证安全性
 
-- [ ] 消息的回溯消费 offset 
+- [ ] 顺序消息 
 
 - [ ] 事务消息
 

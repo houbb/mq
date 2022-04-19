@@ -92,6 +92,28 @@ public class MqProducer extends Thread implements IMqProducer {
      */
     private int maxAttempt = 3;
 
+    /**
+     * 账户标识
+     * @since 0.1.4
+     */
+    private String appKey;
+
+    /**
+     * 账户密码
+     * @since 0.1.4
+     */
+    private String appSecret;
+
+    public MqProducer appKey(String appKey) {
+        this.appKey = appKey;
+        return this;
+    }
+
+    public MqProducer appSecret(String appSecret) {
+        this.appSecret = appSecret;
+        return this;
+    }
+
     public MqProducer groupName(String groupName) {
         this.groupName = groupName;
         return this;
@@ -153,7 +175,9 @@ public class MqProducer extends Thread implements IMqProducer {
                     .invokeService(invokeService)
                     .statusManager(statusManager)
                     .loadBalance(loadBalance)
-                    .maxAttempt(maxAttempt);
+                    .maxAttempt(maxAttempt)
+                    .appKey(appKey)
+                    .appSecret(appSecret);
 
             //1. 初始化
             this.producerBrokerService.initChannelFutureList(config);
@@ -175,6 +199,9 @@ public class MqProducer extends Thread implements IMqProducer {
             log.info("MQ 生产者启动完成");
         } catch (Exception e) {
             log.error("MQ 生产者启动遇到异常", e);
+            // 设置为初始化失败
+            statusManager.initFailed(true);
+
             throw new MqException(ProducerRespCode.RPC_INIT_FAILED);
         }
     }

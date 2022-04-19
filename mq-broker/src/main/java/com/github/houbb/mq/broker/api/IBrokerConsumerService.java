@@ -98,4 +98,11 @@ public interface IBrokerConsumerService {
      */
     void heartbeat(final MqHeartBeatReq mqHeartBeatReq, Channel channel);
 
+    /**
+     * 校验有效性
+     * @param channelId 通道唯一标识
+     * @since 0.1.4
+     */
+    void checkValid(final String channelId);
+
 }

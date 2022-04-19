@@ -26,4 +26,19 @@ public interface IStatusManager {
      */
     IStatusManager status(final boolean status);
 
+    /**
+     * 初始化失败
+     * @return 初始化失败
+     * @since 0.1.4
+     */
+    boolean initFailed();
+
+    /**
+     * 设置初始化失败
+     * @param failed 编码
+     * @return this
+     * @since 0.1.4
+     */
+    IStatusManager initFailed(final boolean failed);
+
 }

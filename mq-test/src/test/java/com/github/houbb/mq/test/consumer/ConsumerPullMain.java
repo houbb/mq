@@ -16,6 +16,8 @@ public class ConsumerPullMain {
     //1. 首先启动消费者，然后启动生产者。
     public static void main(String[] args) {
         final MqConsumerPull mqConsumerPull = new MqConsumerPull();
+        mqConsumerPull.appKey("test")
+                .appSecret("mq");
         mqConsumerPull.start();
 
         mqConsumerPull.subscribe("TOPIC", "TAGA");
