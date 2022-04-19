@@ -25,6 +25,10 @@
 
 - 生产者的消息同步发送，ONE WAY 发送
 
+- 生产消息的批量发送
+
+- 消息状态的批量确认
+
 - fail 支持 failOver failFast 等失败处理策略
 
 - heartbeat 服务端心跳
@@ -43,7 +47,7 @@
 <dependency>
     <groupId>com.github.houbb</groupId>
     <artifactId>mq-broker</artifactId>
-    <version>0.1.0</version>
+    <version>0.1.3</version>
 </dependency>
 ```
 
@@ -62,7 +66,7 @@ broker.start();
 <dependency>
     <groupId>com.github.houbb</groupId>
     <artifactId>mq-consumer</artifactId>
-    <version>0.1.0</version>
+    <version>0.1.3</version>
 </dependency>
 ```
 
@@ -91,7 +95,7 @@ mqConsumerPush.registerListener(new IMqConsumerListener() {
 <dependency>
     <groupId>com.github.houbb</groupId>
     <artifactId>mq-producer</artifactId>
-    <version>0.1.0</version>
+    <version>0.1.3</version>
 </dependency>
 ```
 
@@ -167,7 +171,7 @@ System.out.println(JSON.toJSON(sendResult));
 | mq-broker | 注册中心 |
 | mq-producer | 服务端 |
 | mq-consumer | 客户端 |
-| mq-all | 全部引用模块（简化包引用） |
+| mq-test | 测试模块 |
 
 # 测试代码
 
@@ -201,15 +205,15 @@ System.out.println(JSON.toJSON(sendResult));
 
 - [x] 消息的批量发送，批量 ACK
 
-- [ ] 顺序消息
+- [ ] 顺序消息 
 
-- [ ] 消息的回溯消费
+- [ ] 消息的回溯消费 offset 
 
 - [ ] 事务消息
 
 - [ ] 定时消息
 
-- [ ] 流量控制
+- [ ] 流量控制 back-press 反压
 
 - [ ] 消息可靠性
 
