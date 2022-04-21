@@ -62,7 +62,7 @@ public class MqConsumerPush extends Thread implements IMqConsumer  {
     @Override
     public void run() {
         // 启动服务端
-        log.info("MQ 生产者开始启动服务端 groupName: {}, port: {}, brokerAddress: {}",
+        log.info("MQ 消费者开始启动服务端 groupName: {}, port: {}, brokerAddress: {}",
                 groupName, port, brokerAddress);
 
         EventLoopGroup bossGroup = new NioEventLoopGroup();
@@ -85,12 +85,12 @@ public class MqConsumerPush extends Thread implements IMqConsumer  {
 
             // 绑定端口，开始接收进来的链接
             ChannelFuture channelFuture = serverBootstrap.bind(port).syncUninterruptibly();
-            log.info("MQ 生产者启动完成，监听【" + port + "】端口");
+            log.info("MQ 消费者启动完成，监听【" + port + "】端口");
 
             channelFuture.channel().closeFuture().syncUninterruptibly();
-            log.info("MQ 生产者关闭完成");
+            log.info("MQ 消费者关闭完成");
         } catch (Exception e) {
-            log.error("MQ 生产者启动异常", e);
+            log.error("MQ 消费者启动异常", e);
             throw new MqException(ConsumerRespCode.RPC_INIT_FAILED);
         } finally {
             workerGroup.shutdownGracefully();

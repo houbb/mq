@@ -62,7 +62,7 @@ public class MqProducer extends Thread implements IMqProducer {
     @Override
     public void run() {
         // 启动服务端
-        log.info("MQ 消费者开始启动客户端 GROUP: {}, PORT: {}, brokerAddress: {}",
+        log.info("MQ 生产者开始启动客户端 GROUP: {}, PORT: {}, brokerAddress: {}",
                 groupName, port, brokerAddress);
 
         EventLoopGroup workerGroup = new NioEventLoopGroup();
@@ -83,11 +83,11 @@ public class MqProducer extends Thread implements IMqProducer {
                     .connect("localhost", port)
                     .syncUninterruptibly();
 
-            log.info("MQ 消费者启动客户端完成，监听端口：" + port);
+            log.info("MQ 生产者启动客户端完成，监听端口：" + port);
             channelFuture.channel().closeFuture().syncUninterruptibly();
-            log.info("MQ 消费者开始客户端已关闭");
+            log.info("MQ 生产者开始客户端已关闭");
         } catch (Exception e) {
-            log.error("MQ 消费者启动遇到异常", e);
+            log.error("MQ 生产者启动遇到异常", e);
             throw new MqException(ProducerRespCode.RPC_INIT_FAILED);
         } finally {
             workerGroup.shutdownGracefully();
