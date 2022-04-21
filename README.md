@@ -155,6 +155,8 @@ System.out.println(JSON.toJSON(sendResult));
 
 文档将使用 markdown 文本的形式，补充 code 层面没有的东西。
 
+[【mq】从零开始实现 mq-01-生产者、消费者启动](https://mp.weixin.qq.com/s/moF528JiVG9dqCi5oFMbVg)
+
 ## 代码注释
 
 代码有详细的注释，便于阅读和后期维护。
