@@ -225,6 +225,3 @@ System.out.println(JSON.toJSON(sendResult));
 
 - [ ] 断线重连
 
-# 拓展阅读
-
-[IM 相关](https://www.cnblogs.com/imteck4713/p/13151800.html)
