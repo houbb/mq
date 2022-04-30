@@ -155,7 +155,11 @@ System.out.println(JSON.toJSON(sendResult));
 
 文档将使用 markdown 文本的形式，补充 code 层面没有的东西。
 
-[【mq】从零开始实现 mq-01-生产者、消费者启动](https://mp.weixin.qq.com/s/moF528JiVG9dqCi5oFMbVg)
+[【mq】从零开始实现 mq-01-生产者、消费者启动 ](https://mp.weixin.qq.com/s/moF528JiVG9dqCi5oFMbVg)
+
+[【mq】从零开始实现 mq-02-如何实现生产者调用消费者？](https://mp.weixin.qq.com/s/_OF4hbh9llaxN27Cv_cToQ)
+
+[【mq】从零开始实现 mq-03-引入 broker 中间人](https://mp.weixin.qq.com/s/BvEWsLp3_35yFVRqBOxS2w)
 
 ## 代码注释
 
