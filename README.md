@@ -253,13 +253,6 @@ System.out.println(JSON.toJSON(sendResult));
 - [ ] 断线重连
 
 
-
-select sum(renting_total_num) from xiaoqu_summary_info;
-
-
-select count(*) from house_rent_info;
-
-
 # 中间件等工具开源矩阵
 
 [heaven: 收集开发中常用的工具类](https://github.com/houbb/heaven)
